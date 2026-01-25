@@ -1,0 +1,336 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Transaction {
+  id             String    @id @default(uuid()) @db.Uuid
+  serial_id      Int       @default(autoincrement())
+  userId         String?   @map("user_id") @db.Uuid
+  date           DateTime  @db.Date
+  type           String?   @db.VarChar(20)
+  amount         Decimal   @db.Decimal(19, 2)
+  categoryId     String?   @map("category_id") @db.VarChar(100)
+  categoryName   String?   @map("category_name") @db.VarChar(100)
+  description    String?
+  payee          String?   @db.VarChar(255)
+  vendorTin      String?   @map("vendor_tin") @db.VarChar(50)
+  paymentMethod  String?   @map("payment_method") @db.VarChar(50)
+  refId          String?   @unique @map("ref_id") @db.VarChar(100)
+  receiptUrls    Json?     @default("[]") @map("receipt_urls")
+  vatAmount      Decimal?  @default(0) @map("vat_amount") @db.Decimal(19, 2)
+  complianceMeta Json?     @map("compliance_meta") // Stores bank import data: counterparty, original narration, flags
+  isDeductible   Boolean?  @default(false) @map("is_deductible")
+  weCompliant    Boolean?  @default(false) @map("we_compliant")
+  hasVatEvidence Boolean?  @default(false) @map("has_vat_evidence")
+  isRndExpense   Boolean?  @default(false) @map("is_rnd_expense")
+  authorizedBy   String?   @map("authorized_by") @db.VarChar(100)
+  wallet         String?   @default("operations") @db.VarChar(50)
+  deductionTip   String?   @map("deduction_tip")
+  isCapitalAsset Boolean?  @default(false) @map("is_capital_asset")
+  assetClass     String?   @map("asset_class") @db.VarChar(100)
+  isDigitalAsset Boolean?  @default(false) @map("is_digital_asset")
+  invoiceId      String?   @map("invoice_id") @db.Uuid
+  syncStatus     String?   @default("synced") @map("sync_status") @db.VarChar(20)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamp(6)
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  invoices       Invoice?  @relation(fields: [invoiceId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user           User?     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "transactions_tenant_id_fkey")
+
+  @@map("transactions")
+}
+
+model Invoice {
+  id              String        @id @default(uuid()) @db.Uuid
+  serialId        Int           @default(autoincrement()) @map("serial_id")
+  userId          String?       @map("user_id") @db.Uuid
+  customerName    String?       @map("customer_name") @db.VarChar(255)
+  customerEmail   String?       @map("customer_email") @db.VarChar(255)
+  customerAddress String?       @map("customer_address")
+  customerPhone   String?       @map("customer_phone") @db.VarChar(50)
+  amount          Decimal       @db.Decimal(19, 2)
+  vatAmount       Decimal?      @default(0) @map("vat_amount") @db.Decimal(19, 2)
+  status          String?       @default("draft") @db.VarChar(20)
+  dateIssued      DateTime?     @default(dbgenerated("CURRENT_DATE")) @map("date_issued") @db.Date
+  datePaid        DateTime?     @map("date_paid") @db.Timestamp(6)
+  dateDue         DateTime?     @map("date_due") @db.Date
+  notes           String?
+  items           Json?         @default("[]")
+  proofUrl        String?       @map("proof_url")
+  pdfGeneratedAt  DateTime?     @map("pdf_generated_at") @db.Timestamp(6)
+  reprintCount    Int?          @default(0) @map("reprint_count")
+  syncStatus      String?       @default("synced") @map("sync_status") @db.VarChar(20)
+  createdAt       DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime?     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  user            User?         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "invoices_tenant_id_fkey")
+  transactions    Transaction[]
+
+  @@map("invoices")
+}
+
+model Subscription {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String?   @map("user_id") @db.Uuid
+  planType    String?   @default("pro") @map("plan_type") @db.VarChar(20)
+  status      String?   @default("active") @db.VarChar(20)
+  start_date  DateTime? @default(now()) @db.Timestamp(6)
+  end_date    DateTime? @db.Timestamp(6)
+  payment_ref String?   @db.VarChar(100)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "subscriptions_tenant_id_fkey")
+
+  @@map("subscriptions")
+}
+
+model StartingBalance {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String?   @map("user_id") @db.Uuid
+  year       Int
+  amount     Decimal?  @default(0) @db.Decimal(19, 2)
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "starting_balances_tenant_id_fkey")
+
+  @@unique([userId, year], map: "starting_balances_tenant_id_year_key")
+  @@map("starting_balances")
+}
+
+model BalanceHistory {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String?   @map("user_id") @db.Uuid
+  monthYear      String?   @map("month_year") @db.VarChar(7)
+  openingBalance Decimal?  @map("opening_balance") @db.Decimal(19, 2)
+  totalIncome    Decimal?  @map("total_income") @db.Decimal(19, 2)
+  totalExpense   Decimal?  @map("total_expense") @db.Decimal(19, 2)
+  closingBalance Decimal?  @map("closing_balance") @db.Decimal(19, 2)
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  user           User?     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "balance_history_tenant_id_fkey")
+
+  @@unique([userId, monthYear], map: "balance_history_tenant_id_month_year_key")
+  @@map("balance_history")
+}
+
+model SystemSetting {
+  setting_key   String    @id @db.VarChar(50)
+  setting_value Decimal?  @db.Decimal(19, 4)
+  description   String?
+  updatedAt     DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  @@map("system_settings")
+}
+
+model AuditLog {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String?   @map("user_id") @db.Uuid
+  action     String    @map("action_type") @db.VarChar(100)
+  details    Json?
+  resource   String?   @db.VarChar(100)
+  resourceId String?   @map("resource_id") @db.VarChar(100)
+  ipAddress  String?   @map("ip_address") @db.VarChar(45)
+  userAgent  String?   @map("user_agent")
+  timestamp  DateTime? @default(now()) @db.Timestamp(6)
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "audit_logs_user_id_fkey")
+
+  @@map("audit_logs")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique
+  expiresAt DateTime @map("expires_at") @db.Timestamp(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "refresh_tokens_user_id_fkey")
+
+  @@map("refresh_tokens")
+}
+
+model admin_users {
+  id         String    @id @default(uuid()) @db.Uuid
+  email      String    @unique @db.VarChar(255)
+  role       String?   @default("support") @db.VarChar(50)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model brand_change_history {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String?   @map("user_id") @db.Uuid
+  change_type String?   @db.VarChar(50)
+  old_value   String?
+  new_value   String?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "brand_change_history_tenant_id_fkey")
+}
+
+model brands {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String?   @unique(map: "brands_tenant_id_key") @map("user_id") @db.Uuid
+  brand_color String?   @default("#2252c9") @db.VarChar(50)
+  logo_url    String?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  updated_at  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model sectors {
+  id                              Int      @id @default(autoincrement())
+  name                            String?  @unique @db.VarChar(100)
+  is_exempt_from_small_co_benefit Boolean? @default(false)
+  description                     String?
+  users                           User[]
+}
+
+model subscription_history {
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String?   @map("user_id") @db.Uuid
+  old_status    String?   @db.VarChar(20)
+  new_status    String?   @db.VarChar(20)
+  old_plan      String?   @db.VarChar(20)
+  new_plan      String?   @db.VarChar(20)
+  change_reason String?
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  users         User?     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "subscription_history_tenant_id_fkey")
+}
+
+model User {
+  id                    String   @id(map: "tenants_pkey") @default(uuid()) @db.Uuid
+  serialId              Int      @unique(map: "tenants_serial_id_key") @default(autoincrement()) @map("serial_id")
+  businessName          String?  @map("business_name") @db.VarChar(255)
+  email                 String?  @unique(map: "tenants_email_key") @db.VarChar(255)
+  passwordHash          String?  @map("password_hash") @db.VarChar(255)
+  countryCode           String?  @default("NG") @map("country_code") @db.VarChar(10)
+  currencySymbol        String?  @default("₦") @map("currency_symbol") @db.VarChar(5)
+  subscriptionTier      String?  @default("free") @map("subscription_tier") @db.VarChar(50)
+  accountType           String?  @default("personal") @map("account_type") @db.VarChar(50)
+  brandColor            String?  @default("#2252c9") @map("brand_color") @db.VarChar(50)
+  logoUrl               String?  @map("logo_url")
+  turnoverBand          String?  @default("micro") @map("turnover_band") @db.VarChar(50)
+  sector                String?  @default("general") @db.VarChar(50)
+  taxIdentityNumber     String?  @map("tax_identity_number") @db.VarChar(50)
+  isTaxExempt           Boolean? @default(false) @map("is_tax_exempt")
+  localStatus           String?  @default("active") @map("local_status") @db.VarChar(20)
+  residenceState        String?  @map("residence_state") @db.VarChar(50)
+  paysRent              Boolean? @default(false) @map("pays_rent")
+  rentAmount            Decimal? @default(0) @map("rent_amount") @db.Decimal(19, 2)
+  annualIncome          Decimal? @default(0) @map("annual_income") @db.Decimal(19, 2)
+  businessStructure     String?  @map("business_structure") @db.VarChar(50)
+  isProfessionalService Boolean? @default(false) @map("is_professional_service")
+  nin                   String?  @db.VarChar(20)
+  bvn                   String?  @db.VarChar(20)
+  totalAssets           Decimal? @default(0) @map("total_assets") @db.Decimal(19, 2)
+
+  pensionContribution Decimal?               @default(0) @map("pension_contribution") @db.Decimal(19, 2)
+  globalIncomeDays    Int?                   @default(0) @map("global_income_days")
+  businessAddress     String?                @map("business_address")
+  phoneNumber         String?                @map("phone_number") @db.VarChar(50)
+  sectorId            Int?                   @map("sector_id")
+  isCitExempt         Boolean?               @default(false) @map("is_cit_exempt")
+  isVatExempt         Boolean?               @default(false) @map("is_vat_exempt")
+  stampUrl            String?                @map("stamp_url")
+  invoiceTemplate     String?                @default("modern") @map("invoice_template") @db.VarChar(50)
+  invoiceFont         String?                @default("inter") @map("invoice_font") @db.VarChar(50)
+  showWatermark       Boolean?               @default(false) @map("show_watermark")
+  complianceSuspended Boolean?               @default(false) @map("compliance_suspended")
+  lastLogin           DateTime?              @default(now()) @map("last_login") @db.Timestamp(6)
+  createdAt           DateTime?              @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt           DateTime?              @default(now()) @map("updated_at") @db.Timestamp(6)
+  balanceHistory      BalanceHistory[]
+  brandChangeHistory  brand_change_history[]
+  invoices            Invoice[]
+  startingBalances    StartingBalance[]
+  subscriptionHistory subscription_history[]
+  subscriptions       Subscription[]
+  transactions        Transaction[]
+  taxFilings          TaxFiling[]
+  auditLogs           AuditLog[]
+  refreshTokens       RefreshToken[]
+  passwordResetRequests PasswordResetRequest[]
+  complianceRequests    ComplianceRequest[]
+  sectors             sectors?               @relation(fields: [sectorId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tenants_sector_id_fkey")
+
+  @@map("users")
+}
+
+model PasswordResetRequest {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  email       String    @db.VarChar(255)
+  status      String    @default("pending") @db.VarChar(20) // pending, approved, rejected, completed
+  ipAddress   String?   @map("ip_address")
+  userAgent   String?   @map("user_agent")
+  adminNotes  String?   @map("admin_notes")
+  resolvedBy  String?   @map("resolved_by") @db.Uuid // Admin ID
+  resolvedAt  DateTime? @map("resolved_at") @db.Timestamp(6)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_requests")
+  @@index([status])
+  @@index([userId])
+}
+
+model ComplianceRequest {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  requestType  String    @map("request_type") @db.VarChar(50) // kyc, tax_exemption, rent_relief, sme_status
+  documentUrl  String?   @map("document_url")
+  documentName String?   @map("document_name")
+  status       String    @default("pending") @db.VarChar(20) // pending, approved, rejected
+  notes        String?   // User notes
+  adminNotes   String?   @map("admin_notes")
+  reviewedBy   String?   @map("reviewed_by") @db.Uuid
+  reviewedAt   DateTime? @map("reviewed_at") @db.Timestamp(6)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("compliance_requests")
+  @@index([status])
+  @@index([userId])
+  @@index([requestType])
+}
+
+model TaxFiling {
+  id     String @id @default(cuid())
+  userId String @map("user_id") @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  formType   String   @map("form_type") // 'form-a' | 'cit-return'
+  taxYear    Int      @map("tax_year")
+  filingDate DateTime @default(now()) @map("filing_date")
+  status     String   @default("draft") // 'draft', 'filed', 'paid'
+
+  // Snapshot of key figures at filing time
+  turnover         Decimal @db.Decimal(19, 2)
+  assessableProfit Decimal @db.Decimal(19, 2)
+  totalTaxPaid     Decimal @db.Decimal(19, 2)
+
+  receiptUrl String? @map("receipt_url")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, taxYear])
+  @@map("tax_filings")
+}
+
+model StrategicInsight {
+  id        String   @id @default(uuid()) @db.Uuid
+  title     String   @db.VarChar(255)
+  insight   String
+  law       String?  @db.VarChar(255)
+  category  String   @db.VarChar(100)
+  type      String   @default("opportunity") @db.VarChar(50)
+  impact    String?  @db.VarChar(100)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("strategic_insights")
+}

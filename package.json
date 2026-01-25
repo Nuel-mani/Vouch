@@ -1,0 +1,29 @@
+{
+    "name": "vouch",
+    "private": true,
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "scripts": {
+        "dev": "turbo run dev",
+        "build": "turbo run build",
+        "lint": "turbo run lint",
+        "test": "turbo run test",
+        "dev:web": "turbo run dev --filter=web",
+        "dev:admin": "turbo run dev --filter=admin",
+        "db:generate": "turbo run db:generate --filter=@vouch/db",
+        "db:migrate": "turbo run db:migrate --filter=@vouch/db",
+        "db:push": "turbo run db:push --filter=@vouch/db"
+    },
+    "devDependencies": {
+        "turbo": "^2.3.0",
+        "typescript": "^5.7.0",
+        "prettier": "^3.4.0",
+        "eslint": "^9.17.0"
+    },
+    "engines": {
+        "node": ">=20"
+    },
+    "packageManager": "npm@10.8.0"
+}

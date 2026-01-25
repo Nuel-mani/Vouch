@@ -1,0 +1,24 @@
+{
+    "name": "@vouch/services",
+    "version": "0.0.1",
+    "private": true,
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "scripts": {
+        "build": "tsc",
+        "lint": "eslint src/"
+    },
+    "dependencies": {
+        "@vouch/db": "*",
+        "@vouch/storage": "*",
+        "@vouch/types": "*",
+        "pdf-parse": "^1.1.1",
+        "pdfjs-dist": "^5.4.530",
+        "pdfreader": "^3.0.8",
+        "resend": "^2.1.0"
+    },
+    "devDependencies": {
+        "@types/pdf-parse": "^1.1.5",
+        "typescript": "^5.7.0"
+    }
+}
