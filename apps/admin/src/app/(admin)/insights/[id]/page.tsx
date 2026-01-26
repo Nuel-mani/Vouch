@@ -1,7 +1,7 @@
 import { getInsight } from '../../../actions/insights';
 import { InsightForm } from '../_components/InsightForm';
 
-export default async function EditInsightPage({ params }: { params: { id: string } }) {
+export default async function EditInsightPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const { data: insight } = await getInsight(id);
 
