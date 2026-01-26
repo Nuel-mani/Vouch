@@ -100,7 +100,6 @@ export default async function FiscalEnginePage() {
     // Only applies to Personal accounts
     let rentRelief = 0;
     if (fullUser.accountType === 'personal' && fullUser.paysRent && fullUser.rentAmount) {
-        const { calculateRentRelief } = require('@vouch/services'); // Dynamic import or ensured import at top
         rentRelief = calculateRentRelief(Number(fullUser.rentAmount));
     }
 

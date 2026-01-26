@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Palette, Image as ImageIcon, FileText, CheckCircle, Loader2, Upload, Building, Calculator, Scan, Stamp, Eye, EyeOff, X } from 'lucide-react';
 import { updateBrandStudio } from '../../_actions';
 import { LivePreview } from './LivePreview';
-// @ts-ignore
+// @ts-expect-error - colorthief has no types
 import ColorThief from 'colorthief';
 
 interface BrandingFormProps {

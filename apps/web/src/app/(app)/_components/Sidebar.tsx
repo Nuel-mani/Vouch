@@ -124,7 +124,6 @@ export function Sidebar({ user, riskyCount = 0 }: SidebarProps) {
                                     {item.label}
                                 </div>
                                 {/* Receipt Hunter Badge */}
-                                {/* @ts-ignore - dynamic prop */}
                                 {item.hasBadge && riskyCount > 0 && (
                                     <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                                         {riskyCount}
