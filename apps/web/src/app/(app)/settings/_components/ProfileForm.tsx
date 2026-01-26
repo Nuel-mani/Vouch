@@ -250,7 +250,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                                     <input
                                         name="paysRent"
                                         type="checkbox"
-                                        defaultChecked={user.paysRent}
+                                        defaultChecked={user.paysRent || false}
                                         value="true"
                                         className="rounded border-[var(--border)] text-[var(--primary)]"
                                     />
