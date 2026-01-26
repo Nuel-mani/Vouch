@@ -45,7 +45,7 @@ export default async function UsersPage() {
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-white">
-                                                {user.businessName?.[0] || user.email[0].toUpperCase()}
+                                                {user.businessName?.[0] || user.email?.[0]?.toUpperCase() || 'U'}
                                             </div>
                                             <div>
                                                 {user.businessName && (
@@ -97,7 +97,7 @@ export default async function UsersPage() {
                                             {user.createdAt.toLocaleDateString()}
                                         </div>
                                         <div className="text-xs text-slate-500 mt-0.5">
-                                            Last login: {user.lastLoginAt ? user.lastLoginAt.toLocaleDateString() : 'Never'}
+                                            Last login: {user.lastLogin ? user.lastLogin.toLocaleDateString() : 'Never'}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-right">
