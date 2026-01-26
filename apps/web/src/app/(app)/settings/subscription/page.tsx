@@ -79,9 +79,9 @@ export default async function SubscriptionPage() {
                     <div>
                         <p className="text-blue-100 text-sm">Current Plan</p>
                         <p className="text-2xl font-bold capitalize">{currentPlan}</p>
-                        {subscription?.currentPeriodEnd && (
+                        {subscription?.end_date && (
                             <p className="text-blue-100 text-sm mt-1">
-                                Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                                Renews {new Date(subscription.end_date).toLocaleDateString()}
                             </p>
                         )}
                     </div>
@@ -106,10 +106,10 @@ export default async function SubscriptionPage() {
                         <div
                             key={plan.id}
                             className={`relative bg-white rounded-2xl border-2 p-6 ${plan.popular
-                                    ? 'border-blue-500 shadow-lg'
-                                    : isCurrentPlan
-                                        ? 'border-green-500'
-                                        : 'border-gray-200'
+                                ? 'border-blue-500 shadow-lg'
+                                : isCurrentPlan
+                                    ? 'border-green-500'
+                                    : 'border-gray-200'
                                 }`}
                         >
                             {plan.popular && (
@@ -152,10 +152,10 @@ export default async function SubscriptionPage() {
                             <button
                                 disabled={isCurrentPlan}
                                 className={`w-full py-2.5 rounded-xl font-medium transition ${isCurrentPlan
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : plan.popular
-                                            ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    : plan.popular
+                                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 {isCurrentPlan ? 'Current Plan' : plan.price === 0 ? 'Downgrade' : 'Upgrade'}
