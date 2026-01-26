@@ -148,6 +148,7 @@ export async function cancelSubscription(subscriptionId: string) {
             where: { id: subscriptionId },
             data: {
                 status: 'cancelled',
+                cancelledAt: new Date(),
             },
             include: { user: { select: { id: true } } },
         });
