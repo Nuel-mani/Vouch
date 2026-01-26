@@ -14,7 +14,7 @@ if (typeof global.DOMMatrix === 'undefined') {
 }
 
 // Bypass index.js (which has a broken debug check) and import the core lib directly
-// @ts-ignore
+// @ts-expect-error - pdf-parse internal module doesn't have proper types
 import pdf from 'pdf-parse/lib/pdf-parse.js';
 import { randomUUID } from 'crypto';
 import { categorizeTransaction } from '../tax/categoryMapper';
