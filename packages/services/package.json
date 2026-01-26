@@ -19,6 +19,7 @@
     },
     "devDependencies": {
         "@types/pdf-parse": "^1.1.5",
-        "typescript": "^5.7.0"
+        "typescript": "^5.7.0",
+        "typescript-eslint": "^8.53.1"
     }
 }

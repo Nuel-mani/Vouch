@@ -9,13 +9,14 @@
         "lint": "eslint src/"
     },
     "dependencies": {
-        "bcryptjs": "^2.4.3",
-        "jose": "^5.9.0",
         "@vouch/db": "*",
-        "@vouch/types": "*"
+        "@vouch/types": "*",
+        "bcryptjs": "^2.4.3",
+        "jose": "^5.9.0"
     },
     "devDependencies": {
         "@types/bcryptjs": "^2.4.6",
-        "typescript": "^5.7.0"
+        "typescript": "^5.7.0",
+        "typescript-eslint": "^8.53.1"
     }
 }
