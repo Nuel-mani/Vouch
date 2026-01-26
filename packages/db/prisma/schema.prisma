@@ -263,7 +263,7 @@ model User {
   passwordResetRequests PasswordResetRequest[]
   complianceRequests    ComplianceRequest[]
   adminRoles            UserAdminRole[]
-  adminRoles            UserAdminRole[]
+
   sectors             sectors?               @relation(fields: [sectorId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tenants_sector_id_fkey")
 
   @@map("users")
