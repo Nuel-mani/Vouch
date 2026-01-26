@@ -92,7 +92,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                             <label className="block text-sm font-medium text-[var(--foreground)] mb-1">Email</label>
                             <input
                                 type="email"
-                                value={user.email}
+                                value={user.email || ''}
                                 disabled
                                 className="w-full px-4 py-3 border border-[var(--border)] rounded-xl bg-[var(--muted)] text-[var(--muted-foreground)]"
                             />
