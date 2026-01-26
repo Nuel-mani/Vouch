@@ -104,7 +104,6 @@ export default async function SubscriptionsPage() {
                                 <th className="px-6 py-4">User</th>
                                 <th className="px-6 py-4">Plan</th>
                                 <th className="px-6 py-4">Status</th>
-                                <th className="px-6 py-4">Billing</th>
                                 <th className="px-6 py-4">Period End</th>
                                 <th className="px-6 py-4">Actions</th>
                             </tr>
@@ -132,9 +131,7 @@ export default async function SubscriptionsPage() {
                                             {sub.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-slate-400 capitalize">
-                                        {sub.billingCycle}
-                                    </td>
+
                                     <td className="px-6 py-4 text-slate-400">
                                         {sub.end_date
                                             ? new Date(sub.end_date).toLocaleDateString()
@@ -144,8 +141,8 @@ export default async function SubscriptionsPage() {
                                         <ManageSubscriptionButton
                                             subscription={{
                                                 id: sub.id,
-                                                planType: sub.planType,
-                                                status: sub.status,
+                                                planType: sub.planType || 'free',
+                                                status: sub.status || 'unknown',
                                                 currentPeriodEnd: sub.end_date || new Date(),
                                                 user: {
                                                     email: sub.user?.email || '',
