@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { validateSession } from '@vouch/auth';
-import { getPresignedUploadUrl, getPresignedDownloadUrl } from '@vouch/storage';
+import { getSignedUploadUrl, getSignedDownloadUrl } from '@vouch/storage';
 import { db } from '@vouch/db';
 
 // File upload API - generates presigned URLs for S3 uploads
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         const key = `${user.id}/${folder}/${timestamp}-${randomId}.${ext}`;
 
         // Get presigned upload URL
-        const uploadUrl = await getPresignedUploadUrl(key, contentType);
+        const uploadUrl = await getSignedUploadUrl(key, contentType);
 
         return NextResponse.json({
             success: true,
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Access denied' }, { status: 403 });
         }
 
-        const downloadUrl = await getPresignedDownloadUrl(key);
+        const downloadUrl = await getSignedDownloadUrl(key);
 
         return NextResponse.json({
             success: true,
