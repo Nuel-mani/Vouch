@@ -9,7 +9,13 @@
  *   pm2 logs                               # View logs
  *   pm2 startup                            # Generate startup script
  *   pm2 save                               # Save current process list
+ * 
+ * IMPORTANT: Copy this file to ecosystem.config.local.js and fill in
+ * your actual database credentials there. The .local version is gitignored.
  */
+
+// Load environment variables from .env if needed
+require('dotenv').config({ path: './packages/db/.env' });
 
 module.exports = {
     apps: [
@@ -24,9 +30,11 @@ module.exports = {
             max_memory_restart: '1G',
             env: {
                 NODE_ENV: 'production',
-                PORT: 3000
+                PORT: 3000,
+                // Database - loaded from packages/db/.env or set directly here
+                DATABASE_URL: process.env.DATABASE_URL || 'YOUR_DATABASE_URL_HERE',
+                DIRECT_URL: process.env.DIRECT_URL || 'YOUR_DIRECT_URL_HERE',
             },
-            env_file: '.env.local',
             error_file: './logs/web-error.log',
             out_file: './logs/web-out.log',
             merge_logs: true,
@@ -43,9 +51,11 @@ module.exports = {
             max_memory_restart: '1G',
             env: {
                 NODE_ENV: 'production',
-                PORT: 3001
+                PORT: 3001,
+                // Database - loaded from packages/db/.env or set directly here
+                DATABASE_URL: process.env.DATABASE_URL || 'YOUR_DATABASE_URL_HERE',
+                DIRECT_URL: process.env.DIRECT_URL || 'YOUR_DIRECT_URL_HERE',
             },
-            env_file: '.env.local',
             error_file: './logs/admin-error.log',
             out_file: './logs/admin-out.log',
             merge_logs: true,
