@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       phoneNumber: true,
       email: true,
       brandColor: true,
-      tinNumber: true,
+      taxIdentityNumber: true,
     },
   });
 
@@ -147,13 +147,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       ${fullUser?.businessAddress ? `<div class="company-info">${fullUser.businessAddress}</div>` : ''}
       ${fullUser?.phoneNumber ? `<div class="company-info">${fullUser.phoneNumber}</div>` : ''}
       <div class="company-info">${fullUser?.email}</div>
-      ${fullUser?.tinNumber ? `<div class="company-info">TIN: ${fullUser.tinNumber}</div>` : ''}
+      ${fullUser?.taxIdentityNumber ? `<div class="company-info">TIN: ${fullUser.taxIdentityNumber}</div>` : ''}
     </div>
     <div>
       <div class="invoice-title">INVOICE</div>
       <div class="invoice-number">#${invoice.serialId.toString().padStart(4, '0')}</div>
       <div class="invoice-dates">
-        <div><strong>Date:</strong> ${new Date(invoice.dateIssued).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+        <div><strong>Date:</strong> ${new Date(invoice.dateIssued || new Date()).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
         ${invoice.dateDue ? `<div><strong>Due:</strong> ${new Date(invoice.dateDue).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}</div>` : ''}
       </div>
       ${invoice.status === 'paid' ? '<div class="status-paid">PAID</div>' : ''}

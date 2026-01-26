@@ -14,7 +14,8 @@ interface PaystackHeaders {
     'Content-Type': string;
 }
 
-function getHeaders(): PaystackHeaders {
+// function getHeaders(): PaystackHeaders {
+function getHeaders(): HeadersInit {
     return {
         Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
         'Content-Type': 'application/json',

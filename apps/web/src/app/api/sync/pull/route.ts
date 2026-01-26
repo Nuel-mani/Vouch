@@ -44,13 +44,13 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({
             changes: {
                 transactions: {
-                    created: transactions.filter(t => t.createdAt > timestamp),
-                    updated: transactions.filter(t => t.createdAt <= timestamp && t.updatedAt > timestamp),
+                    created: transactions.filter(t => (t.createdAt || new Date(0)) > timestamp),
+                    updated: transactions.filter(t => (t.createdAt || new Date(0)) <= timestamp && (t.updatedAt || new Date(0)) > timestamp),
                     deleted: [], // Soft deletes would go here if implemented
                 },
                 invoices: {
-                    created: invoices.filter(t => t.createdAt > timestamp),
-                    updated: invoices.filter(t => t.createdAt <= timestamp && t.updatedAt > timestamp),
+                    created: invoices.filter(t => (t.createdAt || new Date(0)) > timestamp),
+                    updated: invoices.filter(t => (t.createdAt || new Date(0)) <= timestamp && (t.updatedAt || new Date(0)) > timestamp),
                     deleted: [],
                 }
             },
