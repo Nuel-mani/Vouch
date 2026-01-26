@@ -71,9 +71,9 @@ export async function POST(request: NextRequest) {
                             data: {
                                 status: 'active',
                                 planType: metadata.plan,
-                                currentPeriodStart: now,
-                                currentPeriodEnd: endDate,
-                                paystackSubscriptionCode: event.data.subscription_code || null,
+                                start_date: now,
+                                end_date: endDate,
+                                payment_ref: event.data.subscription_code || null,
                             },
                         });
 
@@ -94,11 +94,11 @@ export async function POST(request: NextRequest) {
                             data: {
                                 userId,
                                 planType: metadata.plan,
-                                billingCycle: 'monthly',
+                                start_date: now,
+                                end_date: endDate,
+                                // billingCycle: 'monthly', // Removed: Not in schema
                                 status: 'active',
-                                currentPeriodStart: now,
-                                currentPeriodEnd: endDate,
-                                paystackCustomerId: customer.customer_code,
+                                // paystackCustomerId: customer.customer_code, // Removed: Not in schema
                             },
                         });
 
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
 
                 // Find and update the subscription
                 const subscription = await db.subscription.findFirst({
-                    where: { paystackSubscriptionCode: subscription_code },
+                    where: { payment_ref: subscription_code },
                 });
 
                 if (subscription) {
@@ -133,12 +133,14 @@ export async function POST(request: NextRequest) {
                     });
 
                     // Downgrade user to free tier
-                    await db.user.update({
-                        where: { id: subscription.userId },
-                        data: {
-                            subscriptionTier: 'free',
-                        },
-                    });
+                    if (subscription.userId) {
+                        await db.user.update({
+                            where: { id: subscription.userId },
+                            data: {
+                                subscriptionTier: 'free',
+                            },
+                        });
+                    }
                 }
 
                 break;
@@ -149,7 +151,7 @@ export async function POST(request: NextRequest) {
 
                 // Log failed payment
                 const subscription = await db.subscription.findFirst({
-                    where: { paystackSubscriptionCode: subscription_code },
+                    where: { payment_ref: subscription_code },
                 });
 
                 if (subscription) {

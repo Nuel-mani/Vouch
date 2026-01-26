@@ -74,7 +74,7 @@ export default async function PrintInvoicePage({ params }: PageProps) {
                         ...fullUser!,
                         email: fullUser!.email || '',
                         brandColor: fullUser!.brandColor || '#2252c9',
-                        tinNumber: fullUser!.taxIdentityNumber
+                        taxIdentityNumber: fullUser!.taxIdentityNumber
                     }}
                 />
             </div>

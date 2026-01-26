@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
                 businessName: businessName || null,
                 sector: sector || null,
                 turnoverBand: turnoverBand || 'micro',
-                tinNumber: tinNumber || null,
+                taxIdentityNumber: tinNumber || null,
                 isCitExempt,
                 isVatExempt,
             },
