@@ -29,7 +29,10 @@ export default async function InsightsPage({ searchParams }: PageProps) {
                     <p className="text-slate-400">Manage tax tips and insights shown to users.</p>
                 </div>
                 <div className="flex gap-3">
-                    <form action={seedInsights}>
+                    <form action={async () => {
+                        'use server';
+                        await seedInsights();
+                    }}>
                         <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition">
                             <Save className="w-4 h-4" />
                             Seed Defaults
