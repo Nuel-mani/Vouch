@@ -214,6 +214,7 @@ model User {
   email                 String?  @unique(map: "tenants_email_key") @db.VarChar(255)
   passwordHash          String?  @map("password_hash") @db.VarChar(255)
   countryCode           String?  @default("NG") @map("country_code") @db.VarChar(10)
+  role                  String   @default("user") @db.VarChar(20)
   currencySymbol        String?  @default("₦") @map("currency_symbol") @db.VarChar(5)
   subscriptionTier      String?  @default("free") @map("subscription_tier") @db.VarChar(50)
   accountType           String?  @default("personal") @map("account_type") @db.VarChar(50)
