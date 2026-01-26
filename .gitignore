@@ -11,6 +11,11 @@ dist/
 .env
 .env.local
 .env.*.local
+packages/db/.env
+
+# Database backups (contain sensitive data)
+*.sql
+*.dump
 
 # IDE
 .idea/
