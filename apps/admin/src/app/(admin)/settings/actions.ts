@@ -53,15 +53,14 @@ export async function updateSettings(formData: FormData) {
             const stringValue = value === 'on' ? 'true' : String(value);
 
             await db.systemSetting.upsert({
-                where: { key },
+                where: { setting_key: key },
                 update: {
-                    value: stringValue,
-                    updatedBy: user.userId,
+                    setting_value: stringValue,
+                    // updatedBy is not in schema, ignoring for now or could log to audit
                 },
                 create: {
-                    key,
-                    value: stringValue,
-                    updatedBy: user.userId,
+                    setting_key: key,
+                    setting_value: stringValue,
                 },
             });
 
