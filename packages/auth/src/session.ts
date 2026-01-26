@@ -156,6 +156,9 @@ export async function login(
     }
 
     // Verify password
+    if (!user.passwordHash) {
+        throw new AuthError('Invalid email or password', 'INVALID_CREDENTIALS');
+    }
     const isValid = await verifyPassword(password, user.passwordHash);
 
     if (!isValid) {
@@ -173,11 +176,14 @@ export async function login(
     }
 
     // Check if user is an admin
-    const adminRecord = await db.admin_users.findUnique({
-        where: { email: user.email },
-    });
-
-    const role = adminRecord ? 'admin' : 'user';
+    // Check if user is an admin
+    let role = 'user';
+    if (user.email) {
+        const adminRecord = await db.admin_users.findUnique({
+            where: { email: user.email },
+        });
+        role = adminRecord ? 'admin' : 'user';
+    }
 
     // Generate tokens
     const accessToken = await signToken({
