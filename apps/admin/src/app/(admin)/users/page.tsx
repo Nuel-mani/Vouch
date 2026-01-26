@@ -71,7 +71,7 @@ export default async function UsersPage() {
                                                 ? 'bg-slate-700 text-slate-300'
                                                 : 'bg-purple-500/10 text-purple-400 ring-1 ring-purple-500/20'
                                                 }`}>
-                                                {user.subscriptionTier.toUpperCase()}
+                                                {(user.subscriptionTier || 'free').toUpperCase()}
                                             </span>
                                             <span className="text-xs capitalize flex items-center gap-1 text-slate-500">
                                                 {user.accountType}
@@ -94,7 +94,7 @@ export default async function UsersPage() {
                                         <div className="flex items-center gap-1.5" title={user.createdAt.toISOString()}>
                                             <Calendar size={14} />
                                             {/* Note: date-fns might not be installed, using simple date for safety */}
-                                            {user.createdAt.toLocaleDateString()}
+                                            {user.createdAt ? user.createdAt.toLocaleDateString() : 'N/A'}
                                         </div>
                                         <div className="text-xs text-slate-500 mt-0.5">
                                             Last login: {user.lastLogin ? user.lastLogin.toLocaleDateString() : 'Never'}
@@ -104,10 +104,10 @@ export default async function UsersPage() {
                                         <ManageUserButton
                                             user={{
                                                 id: user.id,
-                                                email: user.email,
+                                                email: user.email || '',
                                                 businessName: user.businessName,
-                                                role: user.role,
-                                                subscriptionTier: user.subscriptionTier,
+                                                role: (user as any).role || 'user',
+                                                subscriptionTier: user.subscriptionTier || 'free',
                                             }}
                                         />
                                     </td>
