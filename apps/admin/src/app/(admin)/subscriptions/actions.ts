@@ -62,10 +62,12 @@ export async function updateSubscriptionPlan(
         });
 
         // Also update the user's subscription tier
-        await db.user.update({
-            where: { id: subscription.user.id },
-            data: { subscriptionTier: planType },
-        });
+        if (subscription.user) {
+            await db.user.update({
+                where: { id: subscription.user.id },
+                data: { subscriptionTier: planType },
+            });
+        }
 
         await db.auditLog.create({
             data: {
@@ -73,7 +75,7 @@ export async function updateSubscriptionPlan(
                 action: 'SUBSCRIPTION_PLAN_UPDATED',
                 resource: 'subscription',
                 resourceId: subscriptionId,
-                details: { newPlan: planType, userId: subscription.user.id },
+                details: { newPlan: planType, userId: subscription.user?.id },
             },
         });
 
@@ -105,12 +107,12 @@ export async function extendSubscription(subscriptionId: string, days: number) {
             return { success: false, error: 'Subscription not found' };
         }
 
-        const newEndDate = new Date(subscription.currentPeriodEnd || new Date());
+        const newEndDate = new Date(subscription.end_date || new Date());
         newEndDate.setDate(newEndDate.getDate() + days);
 
         await db.subscription.update({
             where: { id: subscriptionId },
-            data: { currentPeriodEnd: newEndDate },
+            data: { end_date: newEndDate },
         });
 
         await db.auditLog.create({
@@ -146,16 +148,17 @@ export async function cancelSubscription(subscriptionId: string) {
             where: { id: subscriptionId },
             data: {
                 status: 'cancelled',
-                cancelledAt: new Date(),
             },
             include: { user: { select: { id: true } } },
         });
 
         // Downgrade user to free tier
-        await db.user.update({
-            where: { id: subscription.user.id },
-            data: { subscriptionTier: 'free' },
-        });
+        if (subscription.user) {
+            await db.user.update({
+                where: { id: subscription.user.id },
+                data: { subscriptionTier: 'free' },
+            });
+        }
 
         await db.auditLog.create({
             data: {
