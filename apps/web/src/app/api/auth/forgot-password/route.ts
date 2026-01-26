@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         await db.passwordResetRequest.create({
             data: {
                 userId: user.id,
-                email: user.email,
+                email: user.email!,
                 status: 'pending',
                 userAgent,
                 ipAddress: ip,
