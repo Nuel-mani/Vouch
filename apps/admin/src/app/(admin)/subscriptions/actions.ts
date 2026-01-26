@@ -62,6 +62,7 @@ export async function updateSubscriptionPlan(
         });
 
         // Also update the user's subscription tier
+        // Check if user exists before updating
         if (subscription.user) {
             await db.user.update({
                 where: { id: subscription.user.id },
