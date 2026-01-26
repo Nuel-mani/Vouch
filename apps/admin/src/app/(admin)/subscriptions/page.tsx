@@ -27,7 +27,8 @@ export default async function SubscriptionsPage() {
     };
 
     subscriptions.forEach((s) => {
-        stats.byPlan[s.planType] = (stats.byPlan[s.planType] || 0) + 1;
+        const type = s.planType || 'unknown';
+        stats.byPlan[type] = (stats.byPlan[type] || 0) + 1;
     });
 
     return (
