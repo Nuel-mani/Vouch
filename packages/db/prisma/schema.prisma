@@ -346,3 +346,44 @@ model StrategicInsight {
 
   @@map("strategic_insights")
 }
+
+model AdminPermission {
+  id          String                @id @default(uuid()) @db.Uuid
+  name        String                @unique @db.VarChar(100)
+  description String?
+  roles       AdminRolePermission[]
+
+  @@map("admin_permissions")
+}
+
+model AdminRole {
+  id          String                @id @default(uuid()) @db.Uuid
+  name        String                @unique @db.VarChar(50)
+  description String?
+  permissions AdminRolePermission[]
+  users       UserAdminRole[]
+
+  @@map("admin_roles")
+}
+
+model AdminRolePermission {
+  id           String          @id @default(uuid()) @db.Uuid
+  roleId       String          @map("role_id") @db.Uuid
+  permissionId String          @map("permission_id") @db.Uuid
+  role         AdminRole       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   AdminPermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("admin_role_permissions")
+}
+
+model UserAdminRole {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  roleId    String    @map("role_id") @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      AdminRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@map("user_admin_roles")
+}
