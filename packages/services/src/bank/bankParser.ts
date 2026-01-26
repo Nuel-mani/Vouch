@@ -13,9 +13,9 @@ if (typeof global.DOMMatrix === 'undefined') {
     };
 }
 
-// Handle pdf-parse import 
 // Bypass index.js (which has a broken debug check) and import the core lib directly
-const pdf = require('pdf-parse/lib/pdf-parse.js');
+// @ts-ignore
+import pdf from 'pdf-parse/lib/pdf-parse.js';
 import { randomUUID } from 'crypto';
 import { categorizeTransaction } from '../tax/categoryMapper';
 
