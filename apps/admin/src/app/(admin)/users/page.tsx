@@ -91,7 +91,7 @@ export default async function UsersPage() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center gap-1.5" title={user.createdAt.toISOString()}>
+                                        <div className="flex items-center gap-1.5" title={user.createdAt?.toISOString() || ''}>
                                             <Calendar size={14} />
                                             {/* Note: date-fns might not be installed, using simple date for safety */}
                                             {user.createdAt ? user.createdAt.toLocaleDateString() : 'N/A'}
