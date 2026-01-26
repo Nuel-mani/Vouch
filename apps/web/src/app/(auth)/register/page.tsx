@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Loader2, Building, User, ArrowRight, CheckCircle, Sparkles, AlertCircle } from 'lucide-react';
@@ -44,7 +44,7 @@ const sectors = [
     'Tech',
 ];
 
-export default function RegisterPage() {
+function RegisterContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const defaultType = searchParams.get('type') || 'personal';
@@ -515,5 +515,17 @@ export default function RegisterPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-[var(--primary)]" />
+            </div>
+        }>
+            <RegisterContent />
+        </Suspense>
     );
 }

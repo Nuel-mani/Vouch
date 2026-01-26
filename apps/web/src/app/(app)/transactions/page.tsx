@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { cookies } from 'next/headers';
 import { validateSession } from '@vouch/auth';
 import { db } from '@vouch/db';
@@ -151,7 +152,9 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
             </div>
 
             {/* Filters */}
-            <TransactionFilters />
+            <Suspense fallback={null}>
+                <TransactionFilters />
+            </Suspense>
 
             {/* Transaction List */}
             <TransactionList transactions={transactions} userBusinessName={user.businessName} />
