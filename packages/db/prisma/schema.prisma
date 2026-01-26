@@ -117,7 +117,7 @@ model BalanceHistory {
 
 model SystemSetting {
   setting_key   String    @id @db.VarChar(50)
-  setting_value Decimal?  @db.Decimal(19, 4)
+  setting_value String?   @db.Text
   description   String?
   updatedAt     DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
 

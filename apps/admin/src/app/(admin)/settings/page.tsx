@@ -6,7 +6,7 @@ import { SettingsForm } from './components/SettingsForm';
 export default async function AdminSettingsPage() {
     // Fetch system settings
     const settings = await db.systemSetting.findMany();
-    const settingsMap = new Map(settings.map((s) => [s.key, s.value]));
+    const settingsMap = new Map(settings.map((s) => [s.setting_key, s.setting_value]));
 
     const settingGroups = [
         {
