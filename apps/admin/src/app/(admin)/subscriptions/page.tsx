@@ -113,8 +113,8 @@ export default async function SubscriptionsPage() {
                             {subscriptions.slice(0, 20).map((sub) => (
                                 <tr key={sub.id} className="hover:bg-slate-800 transition">
                                     <td className="px-6 py-4">
-                                        <p className="font-medium text-white">{sub.user.businessName || 'N/A'}</p>
-                                        <p className="text-xs text-slate-500">{sub.user.email}</p>
+                                        <p className="font-medium text-white">{sub.user?.businessName || 'N/A'}</p>
+                                        <p className="text-xs text-slate-500">{sub.user?.email || 'No Email'}</p>
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`px-2 py-1 rounded text-xs font-medium uppercase ${sub.planType === 'enterprise' ? 'bg-purple-500/10 text-purple-400' :
@@ -136,8 +136,8 @@ export default async function SubscriptionsPage() {
                                         {sub.billingCycle}
                                     </td>
                                     <td className="px-6 py-4 text-slate-400">
-                                        {sub.currentPeriodEnd
-                                            ? new Date(sub.currentPeriodEnd).toLocaleDateString()
+                                        {sub.end_date
+                                            ? new Date(sub.end_date).toLocaleDateString()
                                             : '-'}
                                     </td>
                                     <td className="px-6 py-4">
@@ -146,10 +146,10 @@ export default async function SubscriptionsPage() {
                                                 id: sub.id,
                                                 planType: sub.planType,
                                                 status: sub.status,
-                                                currentPeriodEnd: sub.currentPeriodEnd || new Date(),
+                                                currentPeriodEnd: sub.end_date || new Date(),
                                                 user: {
-                                                    email: sub.user.email,
-                                                    businessName: sub.user.businessName,
+                                                    email: sub.user?.email || '',
+                                                    businessName: sub.user?.businessName || '',
                                                 },
                                             }}
                                         />
