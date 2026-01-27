@@ -39,7 +39,7 @@ export default function LandingPage() {
                             Get Started
                         </Link>
                         <button
-                            className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                            className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                         >
                             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -49,16 +49,16 @@ export default function LandingPage() {
 
                 {/* Mobile Menu Overlay */}
                 {isMobileMenuOpen && (
-                    <div className="md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-slate-200 p-6 flex flex-col gap-6 shadow-2xl animate-in slide-in-from-top-5">
-                        <a href="#features" className="text-lg font-bold text-slate-600" onClick={() => setIsMobileMenuOpen(false)}>Solutions</a>
-                        <Link href="/pricing" className="text-lg font-bold text-slate-600" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
-                        <a href="#compliance" className="text-lg font-bold text-slate-600" onClick={() => setIsMobileMenuOpen(false)}>Compliance Guide</a>
+                    <div className="md:hidden absolute top-20 left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-700 p-6 flex flex-col gap-6 shadow-2xl animate-in slide-in-from-top-5">
+                        <a href="#features" className="text-lg font-bold text-slate-600 dark:text-slate-300" onClick={() => setIsMobileMenuOpen(false)}>Solutions</a>
+                        <Link href="/pricing" className="text-lg font-bold text-slate-600 dark:text-slate-300" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
+                        <a href="#compliance" className="text-lg font-bold text-slate-600 dark:text-slate-300" onClick={() => setIsMobileMenuOpen(false)}>Compliance Guide</a>
                         <div className="flex items-center gap-4">
-                            <span className="text-sm font-bold text-slate-500">Theme:</span>
+                            <span className="text-sm font-bold text-slate-500 dark:text-slate-400">Theme:</span>
                             <ThemeToggle />
                         </div>
-                        <div className="h-px bg-slate-100 w-full" />
-                        <Link href="/login" className="text-lg font-bold text-slate-900" onClick={() => setIsMobileMenuOpen(false)}>Log In</Link>
+                        <div className="h-px bg-slate-100 dark:bg-slate-700 w-full" />
+                        <Link href="/login" className="text-lg font-bold text-slate-900 dark:text-white" onClick={() => setIsMobileMenuOpen(false)}>Log In</Link>
                         <Link
                             href="/register"
                             className="bg-[var(--accent)] text-white font-bold py-4 px-6 rounded-xl text-center shadow-md active:scale-95"
@@ -258,7 +258,7 @@ export default function LandingPage() {
             </section>
 
             {/* Segmentation Section */}
-            <section id="solutions" className="py-12 md:py-24 bg-white relative">
+            <section id="solutions" className="py-12 md:py-24 bg-white dark:bg-slate-900 relative">
                 <div className="max-w-7xl mx-auto px-4 md:px-8">
                     <div className="text-center max-w-3xl mx-auto mb-12 md:mb-20">
                         <p className="text-[var(--primary)] font-black uppercase tracking-[0.2em] text-sm mb-4">Choose Your Engine</p>
@@ -366,7 +366,7 @@ export default function LandingPage() {
             </section>
 
             {/* Compliance Check Section */}
-            <section className="py-12 md:py-24 bg-white relative">
+            <section className="py-12 md:py-24 bg-white dark:bg-slate-900 relative">
                 <div className="max-w-7xl mx-auto px-4 md:px-8">
                     <div className="text-center max-w-3xl mx-auto mb-12 md:mb-16">
                         <p className="text-[var(--primary)] font-black uppercase tracking-[0.2em] text-sm mb-4">Lead with Logic</p>

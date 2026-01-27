@@ -14,10 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nothing yet
 
 ### Changed
-- Nothing yet
+- Default theme changed from `system` to `light` - app now loads in light mode by default
+- ThemeProvider default updated in `packages/ui/src/ThemeProvider.tsx`
+- Root layout theme prop updated in `apps/web/src/app/layout.tsx`
 
 ### Fixed
-- Nothing yet
+- **Landing Page Dark Mode**: Fixed mobile menu overlay, hamburger button, and section backgrounds missing dark mode variants
+- **TopBar Dropdown Dark Mode**: Fixed profile dropdown missing dark backgrounds, text colors, borders and hover states
+- **App Layout**: Fixed suspended state using hardcoded `bg-slate-950` instead of CSS variable
+- **Pricing Page**: Fixed purple trust badge missing dark mode variant
 
 ### Removed
 - Nothing yet

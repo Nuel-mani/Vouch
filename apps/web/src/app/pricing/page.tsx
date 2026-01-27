@@ -241,7 +241,7 @@ export default function PricingPage() {
                             <p className="text-sm text-[var(--muted-foreground)]">Always available</p>
                         </div>
                         <div>
-                            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-100 flex items-center justify-center">
+                            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
                                 <Users className="text-purple-600" size={24} />
                             </div>
                             <p className="font-bold text-[var(--foreground)]">2,000+ Businesses</p>

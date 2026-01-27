@@ -63,7 +63,7 @@ export default async function AppLayout({
     // If suspended, show restricted UI
     if (isSuspended) {
         return (
-            <div className="min-h-screen bg-slate-950 flex flex-col">
+            <div className="min-h-screen bg-[var(--background)] flex flex-col">
                 {/* Suspended Header */}
                 <div className="bg-red-600 text-white px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">

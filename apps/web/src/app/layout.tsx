@@ -30,7 +30,7 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body className={`${jakarta.variable} ${merriweather.variable} font-sans`} suppressHydrationWarning>
-                <ThemeProvider defaultTheme="system" storageKey="opcore-theme">
+                <ThemeProvider defaultTheme="light" storageKey="opcore-theme">
                     <CryptoPolyfill />
                     {children}
                     <Toaster richColors position="top-right" />
