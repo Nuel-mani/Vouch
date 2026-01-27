@@ -143,6 +143,24 @@ export default async function FiscalEnginePage() {
                 <StandbyState
                     turnover={turnover}
                     threshold={25_000_000}
+                    assessableProfit={assessableProfit}
+                    deductibleExpenses={deductibleExpenses}
+                    nonDeductibleExpenses={totalExpenses - deductibleExpenses}
+                    taxRate={taxCalc.taxRate}
+                    devLevy={taxCalc.devLevy}
+                    rndIncentive={rndIncentive}
+                    user={{
+                        ...fullUser,
+                        totalAssets: fullUser.totalAssets ? Number(fullUser.totalAssets) : 0,
+                        rentAmount: fullUser.rentAmount ? Number(fullUser.rentAmount) : 0,
+                        tin: fullUser.taxIdentityNumber
+                    }}
+                    filings={filings.map(f => ({
+                        ...f,
+                        turnover: Number(f.turnover),
+                        assessableProfit: Number(f.assessableProfit),
+                        totalTaxPaid: Number(f.totalTaxPaid)
+                    }))}
                 />
             )}
         </div>

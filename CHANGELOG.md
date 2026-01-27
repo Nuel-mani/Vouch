@@ -11,7 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- When releasing, move these to a new version section below -->
 
 ### Added
-- Nothing yet
+- **Fiscal Engine Standby State**: Upgraded "Tax Exempt" mode with specific tools for valid compliance.
+  - **Tabbed Interface**: Added Overview, Forms, and Planner tabs for better organization.
+  - **Mandatory Filing**: Enabled "Nil Return" generation for Small Companies (Turnover < ₦25M) as required by NTA 2025.
+  - **Compliance Check**: Added tax breakdown showing 0% liability but confirming "Compliant" status.
+  - **Tax Shield Planner**: Added predictive simulator for "Future Tax Credits" (Carry-forward Capital Allowances).
 
 ### Changed
 - Default theme changed from `system` to `light` - app now loads in light mode by default
@@ -29,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - 2026-01-27
+## [1.0.1] - 2026-01-27
 
 ### Added
 - Initial release of Vouch application
