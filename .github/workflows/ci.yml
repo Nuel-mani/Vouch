@@ -30,11 +30,13 @@ jobs:
         run: npx turbo run db:generate
         env:
           DATABASE_URL: "postgresql://postgres:password@localhost:5432/opcore"
+          DIRECT_URL: "postgresql://postgres:password@localhost:5432/opcore"
 
       - name: Build
         run: npm run build
         env:
           DATABASE_URL: "postgresql://postgres:password@localhost:5432/opcore"
+          DIRECT_URL: "postgresql://postgres:password@localhost:5432/opcore"
 
       - name: Lint
 
