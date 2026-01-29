@@ -1,5 +1,6 @@
 'use server';
 
+import crypto from 'crypto';
 import { db } from '@vouch/db';
 import { revalidatePath } from 'next/cache';
 import { sendVerificationEmail } from '@vouch/services';
@@ -71,7 +72,6 @@ export async function resendUserVerificationEmail(userId: string) {
 
         // If no token exists (weird edge case for pending verify), create one
         if (!token) {
-            const crypto = require('crypto');
             const newToken = crypto.randomUUID();
             const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
