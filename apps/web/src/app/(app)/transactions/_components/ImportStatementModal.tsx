@@ -18,7 +18,33 @@ export function ImportStatementModal({ onClose, userAccountType }: ImportStateme
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [extractedData, setExtractedData] = useState<any[]>([]);
+    const [dragActive, setDragActive] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setDragActive(true);
+        } else if (e.type === 'dragleave') {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            const droppedFile = e.dataTransfer.files[0];
+            if (droppedFile.type === 'application/pdf') {
+                setFile(droppedFile);
+                setError(null);
+            } else {
+                setError('Please upload a PDF file.');
+            }
+        }
+    };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -124,9 +150,15 @@ export function ImportStatementModal({ onClose, userAccountType }: ImportStateme
                     {/* File Upload */}
                     <div
                         onClick={() => fileInputRef.current?.click()}
+                        onDragEnter={handleDrag}
+                        onDragLeave={handleDrag}
+                        onDragOver={handleDrag}
+                        onDrop={handleDrop}
                         className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${file
                             ? 'border-green-500 bg-green-50 dark:bg-green-900/10'
-                            : 'border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--muted)]'
+                            : dragActive
+                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.02]'
+                                : 'border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--muted)]'
                             }`}
                     >
                         <input
@@ -145,11 +177,11 @@ export function ImportStatementModal({ onClose, userAccountType }: ImportStateme
                             </div>
                         ) : (
                             <div className="flex flex-col items-center gap-3 text-[var(--muted-foreground)]">
-                                <div className="p-3 bg-[var(--muted)] rounded-full">
-                                    <Upload size={24} />
+                                <div className={`p-3 rounded-full transition-transform duration-300 ${dragActive ? 'bg-blue-100 dark:bg-blue-900/30 scale-110' : 'bg-[var(--muted)]'}`}>
+                                    <Upload size={24} className={dragActive ? 'text-blue-500' : ''} />
                                 </div>
                                 <div>
-                                    <p className="font-medium text-[var(--foreground)]">Click to upload statement</p>
+                                    <p className="font-medium text-[var(--foreground)]">Click to upload or drag and drop</p>
                                     <p className="text-xs mt-1">PDF files only (Max 5MB)</p>
                                 </div>
                             </div>

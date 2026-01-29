@@ -247,17 +247,19 @@ model User {
   invoiceTemplate     String?                @default("modern") @map("invoice_template") @db.VarChar(50)
   invoiceFont         String?                @default("inter") @map("invoice_font") @db.VarChar(50)
   showWatermark       Boolean?               @default(false) @map("show_watermark")
-  complianceSuspended Boolean?               @default(false) @map("compliance_suspended")
-  lastLogin           DateTime?              @default(now()) @map("last_login") @db.Timestamp(6)
-  createdAt           DateTime?              @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt           DateTime?              @default(now()) @map("updated_at") @db.Timestamp(6)
-  balanceHistory      BalanceHistory[]
-  brandChangeHistory  brand_change_history[]
-  invoices            Invoice[]
-  startingBalances    StartingBalance[]
-  subscriptionHistory subscription_history[]
-  subscriptions       Subscription[]
-  transactions        Transaction[]
+  complianceSuspended       Boolean?               @default(false) @map("compliance_suspended")
+  emailVerified             Boolean?               @default(false) @map("email_verified")
+  verificationHelpRequested Boolean?               @default(false) @map("verification_help_requested")
+  lastLogin                 DateTime?              @default(now()) @map("last_login") @db.Timestamp(6)
+  createdAt                 DateTime?              @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                 DateTime?              @default(now()) @map("updated_at") @db.Timestamp(6)
+  balanceHistory            BalanceHistory[]
+  brandChangeHistory        brand_change_history[]
+  invoices                  Invoice[]
+  startingBalances          StartingBalance[]
+  subscriptionHistory       subscription_history[]
+  subscriptions             Subscription[]
+  transactions              Transaction[]
   taxFilings          TaxFiling[]
   auditLogs           AuditLog[]
   refreshTokens       RefreshToken[]
@@ -268,6 +270,15 @@ model User {
   sectors             sectors?               @relation(fields: [sectorId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tenants_sector_id_fkey")
 
   @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
 model PasswordResetRequest {

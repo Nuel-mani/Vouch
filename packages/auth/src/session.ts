@@ -12,7 +12,7 @@ export interface AuthResult {
 export class AuthError extends Error {
     constructor(
         message: string,
-        public code: 'INVALID_CREDENTIALS' | 'USER_EXISTS' | 'USER_NOT_FOUND' | 'INVALID_TOKEN' | 'WEAK_PASSWORD'
+        public code: 'INVALID_CREDENTIALS' | 'USER_EXISTS' | 'USER_NOT_FOUND' | 'INVALID_TOKEN' | 'WEAK_PASSWORD' | 'EMAIL_NOT_VERIFIED'
     ) {
         super(message);
         this.name = 'AuthError';
@@ -33,6 +33,7 @@ export interface RegistrationData {
     annualIncome?: number;
     isVatExempt?: boolean;
     isTaxExempt?: boolean;
+    subscriptionTier?: string;
 }
 
 /**
@@ -80,7 +81,7 @@ export async function register(
             annualIncome: data.annualIncome,
             isVatExempt: data.isVatExempt,
             isTaxExempt: data.isTaxExempt,
-            subscriptionTier: 'free',
+            subscriptionTier: data.subscriptionTier || 'free',
         },
     });
 
@@ -173,6 +174,11 @@ export async function login(
             },
         });
         throw new AuthError('Invalid email or password', 'INVALID_CREDENTIALS');
+    }
+
+    // Check if email is verified
+    if (user.emailVerified === false) {
+        throw new AuthError('Email not verified', 'EMAIL_NOT_VERIFIED');
     }
 
     // Check if user is an admin

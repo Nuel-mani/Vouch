@@ -3,8 +3,9 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, EyeOff, Loader2, Building, User, ArrowRight, CheckCircle, Sparkles, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Building, User, ArrowRight, CheckCircle, Sparkles, AlertCircle, Mail, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { requestVerificationHelp } from '../../actions/auth';
 
 const benefits = [
     'Unlimited transactions',
@@ -76,6 +77,9 @@ function RegisterContent() {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [verificationSent, setVerificationSent] = useState(false);
+    const [helpRequested, setHelpRequested] = useState(false);
+    const [helpLoading, setHelpLoading] = useState(false);
 
     // Derived State for Tax Logic
     useEffect(() => {
@@ -142,12 +146,30 @@ function RegisterContent() {
                 throw new Error(data.error || 'Registration failed');
             }
 
-            toast.success('Vouch ID created! Welcome to the standard of trust.');
-            router.push('/dashboard');
+            if (data.requiresVerification) {
+                setVerificationSent(true);
+                toast.success('Account created! Please verify your email.');
+            } else {
+                toast.success('Vouch ID created! Welcome to the standard of trust.');
+                router.push('/dashboard');
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleRequestHelp = async () => {
+        setHelpLoading(true);
+        const res = await requestVerificationHelp(email);
+        setHelpLoading(false);
+
+        if (res.error) {
+            toast.error(res.error);
+        } else {
+            setHelpRequested(true);
+            toast.success('Support has been notified. We will verify you manually shortly.');
         }
     };
 
@@ -211,307 +233,350 @@ function RegisterContent() {
                     {/* Mobile Logo Hidden (Using Top Banner instead) */}
 
                     <div className="mb-8">
-                        <h1 className="text-3xl font-black text-[var(--foreground)] mb-2">Create your account</h1>
-                        <p className="text-[var(--muted-foreground)]">
-                            Join thousands of Nigerians simplifying their taxes.
-                        </p>
-                    </div>
-
-                    {/* Account Type Selector */}
-                    <div className="grid grid-cols-2 gap-4 mb-8">
-                        <button
-                            type="button"
-                            onClick={() => setAccountType('personal')}
-                            className={`p-4 border-2 rounded-xl flex items-center justify-center gap-2 transition-all
-                                ${accountType === 'personal'
-                                    ? 'border-[var(--primary)] bg-[var(--primary-50)] text-[var(--primary)]'
-                                    : 'border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--primary-300)]'
-                                }`}
-                        >
-                            <User size={20} />
-                            <span className="font-semibold">Personal</span>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setAccountType('business')}
-                            className={`p-4 border-2 rounded-xl flex items-center justify-center gap-2 transition-all
-                                ${accountType === 'business'
-                                    ? 'border-[var(--primary)] bg-[var(--primary-50)] text-[var(--primary)]'
-                                    : 'border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--primary-300)]'
-                                }`}
-                        >
-                            <Building size={20} />
-                            <span className="font-semibold">Business</span>
-                        </button>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        {error && (
-                            <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm flex items-start gap-2">
-                                <AlertCircle size={18} className="shrink-0 mt-0.5" />
-                                <span>{error}</span>
-                            </div>
-                        )}
-
-                        {/* Name Field */}
-                        <div>
-                            <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                                {accountType === 'business' ? 'Business Name' : 'Full Name'}
-                            </label>
-                            <div className="relative">
-                                {/* Icon placeholder logic if needed */}
-                                <input
-                                    type="text"
-                                    required
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:ring-2 focus:ring-[var(--primary)] transition-all"
-                                    placeholder={accountType === 'business' ? 'e.g. Lagos Ventures Ltd' : 'e.g. Adebayo Johnson'}
-                                />
-                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]">
-                                    {accountType === 'business' ? <Building size={18} /> : <User size={18} />}
+                        {verificationSent ? (
+                            <div className="text-center">
+                                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <Mail size={32} />
                                 </div>
-                            </div>
-                        </div>
+                                <h1 className="text-3xl font-black text-[var(--foreground)] mb-2">Check your email</h1>
+                                <p className="text-[var(--muted-foreground)] mb-8">
+                                    We sent a verification link to <span className="font-semibold text-blue-600">{email}</span>. Please click the link to activate your account.
+                                </p>
 
-                        {/* Email */}
-                        <div>
-                            <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Email Address</label>
-                            <input
-                                type="email"
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:ring-2 focus:ring-[var(--primary)] transition-all"
-                                placeholder="name@example.com"
-                            />
-                        </div>
-
-                        {/* Password Group */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div>
-                                <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Password</label>
-                                <div className="relative">
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        required
-                                        minLength={8}
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)]"
-                                        placeholder="••••••••"
-                                    />
+                                {helpRequested ? (
+                                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-700 flex items-center gap-3">
+                                        <CheckCircle size={20} />
+                                        <div className="text-left text-sm">
+                                            <strong>Help Request Sent</strong>
+                                            <p>Our team has been notified and will manually verify your account shortly.</p>
+                                        </div>
+                                    </div>
+                                ) : (
                                     <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]"
+                                        onClick={handleRequestHelp}
+                                        disabled={helpLoading}
+                                        className="text-sm text-[var(--muted-foreground)] hover:text-blue-600 underline flex items-center gap-2 mx-auto disabled:opacity-50"
                                     >
-                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        {helpLoading ? <Loader2 size={14} className="animate-spin" /> : <HelpCircle size={14} />}
+                                        I didn't receive the email
                                     </button>
+                                )}
+
+                                <div className="mt-8 pt-8 border-t border-[var(--border)]">
+                                    <Link href="/login" className="btn-secondary w-full py-3 block text-center rounded-xl font-medium">
+                                        Back to Login
+                                    </Link>
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Confirm Password</label>
-                                <input
-                                    type="password"
-                                    required
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)]"
-                                    placeholder="••••••••"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Address & Phone */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div>
-                                <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Address</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                    className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)]"
-                                    placeholder="123 Street Name"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Phone Number</label>
-                                <input
-                                    type="tel"
-                                    required
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                    className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)]"
-                                    placeholder="+234..."
-                                />
-                            </div>
-                        </div>
-
-                        <hr className="border-[var(--border)] my-6" />
-
-                        {/* --- BUSINESS SPECIFIC --- */}
-                        {accountType === 'business' && (
-                            <div className="space-y-5">
-                                <h3 className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Company Details</h3>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    {/* Tax ID */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Tax ID / NIN (Optional)</label>
-                                        <input
-                                            type="text"
-                                            value={taxId}
-                                            onChange={(e) => setTaxId(e.target.value)}
-                                            className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]"
-                                            placeholder="Optional"
-                                        />
-                                    </div>
-
-                                    {/* Turnover Band */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Turnover Band</label>
-                                        <select
-                                            value={turnover}
-                                            onChange={(e) => setTurnover(e.target.value)}
-                                            className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] appearance-none"
-                                        >
-                                            {turnoverBands.map((band) => (
-                                                <option key={band.value} value={band.value}>
-                                                    {band.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    {/* Structure */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Structure</label>
-                                        <select
-                                            value={structure}
-                                            onChange={(e) => setStructure(e.target.value)}
-                                            className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] appearance-none"
-                                        >
-                                            {businessStructures.map((s) => (
-                                                <option key={s} value={s}>{s}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    {/* Sector */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Business Sector</label>
-                                        <select
-                                            value={sector}
-                                            onChange={(e) => setSector(e.target.value)}
-                                            className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] appearance-none"
-                                        >
-                                            {sectors.map((s) => (
-                                                <option key={s} value={s}>{s}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
+                        ) : (
+                            <>
+                                <h1 className="text-3xl font-black text-[var(--foreground)] mb-2">Create your account</h1>
+                                <p className="text-[var(--muted-foreground)]">
+                                    Join thousands of Nigerians simplifying their taxes.
+                                </p>
+                            </>
                         )}
+                    </div>
 
-                        {/* --- PERSONAL SPECIFIC --- */}
-                        {accountType === 'personal' && (
-                            <div className="space-y-5">
-                                <h3 className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Tax Profile (NTA 2025)</h3>
+                    {!verificationSent && (
+                        <>
+                            {/* Account Type Selector */}
+                            <div className="grid grid-cols-2 gap-4 mb-8">
+                                <button
+                                    type="button"
+                                    onClick={() => setAccountType('personal')}
+                                    className={`p-4 border-2 rounded-xl flex items-center justify-center gap-2 transition-all
+                                ${accountType === 'personal'
+                                            ? 'border-[var(--primary)] bg-[var(--primary-50)] text-[var(--primary)]'
+                                            : 'border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--primary-300)]'
+                                        }`}
+                                >
+                                    <User size={20} />
+                                    <span className="font-semibold">Personal</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setAccountType('business')}
+                                    className={`p-4 border-2 rounded-xl flex items-center justify-center gap-2 transition-all
+                                ${accountType === 'business'
+                                            ? 'border-[var(--primary)] bg-[var(--primary-50)] text-[var(--primary)]'
+                                            : 'border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--primary-300)]'
+                                        }`}
+                                >
+                                    <Building size={20} />
+                                    <span className="font-semibold">Business</span>
+                                </button>
+                            </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    {/* Tax ID */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Tax ID / NIN (Optional)</label>
-                                        <input
-                                            type="text"
-                                            value={taxId}
-                                            onChange={(e) => setTaxId(e.target.value)}
-                                            className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]"
-                                            placeholder="Optional"
-                                        />
+                            <form onSubmit={handleSubmit} className="space-y-5">
+                                {error && (
+                                    <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm flex items-start gap-2">
+                                        <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                                        <span>{error}</span>
                                     </div>
+                                )}
 
-                                    {/* Annual Income */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Annual Income</label>
+                                {/* Name Field */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
+                                        {accountType === 'business' ? 'Business Name' : 'Full Name'}
+                                    </label>
+                                    <div className="relative">
+                                        {/* Icon placeholder logic if needed */}
                                         <input
                                             type="text"
-                                            value={annualIncome}
-                                            onChange={(e) => setAnnualIncome(e.target.value)}
-                                            className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]"
-                                            placeholder="Est. Annual"
+                                            required
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:ring-2 focus:ring-[var(--primary)] transition-all"
+                                            placeholder={accountType === 'business' ? 'e.g. Lagos Ventures Ltd' : 'e.g. Adebayo Johnson'}
+                                        />
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]">
+                                            {accountType === 'business' ? <Building size={18} /> : <User size={18} />}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Email */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Email Address</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:ring-2 focus:ring-[var(--primary)] transition-all"
+                                        placeholder="name@example.com"
+                                    />
+                                </div>
+
+                                {/* Password Group */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Password</label>
+                                        <div className="relative">
+                                            <input
+                                                type={showPassword ? 'text' : 'password'}
+                                                required
+                                                minLength={8}
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)]"
+                                                placeholder="••••••••"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]"
+                                            >
+                                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Confirm Password</label>
+                                        <input
+                                            type="password"
+                                            required
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)]"
+                                            placeholder="••••••••"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        id="paysRent"
-                                        checked={paysRent}
-                                        onChange={(e) => setPaysRent(e.target.checked)}
-                                        className="w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
-                                    />
-                                    <label htmlFor="paysRent" className="text-sm text-[var(--foreground)]">
-                                        I pay Rent (eligible for Relief)
+                                {/* Address & Phone */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Address</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={address}
+                                            onChange={(e) => setAddress(e.target.value)}
+                                            className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)]"
+                                            placeholder="123 Street Name"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Phone Number</label>
+                                        <input
+                                            type="tel"
+                                            required
+                                            value={phone}
+                                            onChange={(e) => setPhone(e.target.value)}
+                                            className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)]"
+                                            placeholder="+234..."
+                                        />
+                                    </div>
+                                </div>
+
+                                <hr className="border-[var(--border)] my-6" />
+
+                                {/* --- BUSINESS SPECIFIC --- */}
+                                {accountType === 'business' && (
+                                    <div className="space-y-5">
+                                        <h3 className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Company Details</h3>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                            {/* Tax ID */}
+                                            <div>
+                                                <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Tax ID / NIN (Optional)</label>
+                                                <input
+                                                    type="text"
+                                                    value={taxId}
+                                                    onChange={(e) => setTaxId(e.target.value)}
+                                                    className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]"
+                                                    placeholder="Optional"
+                                                />
+                                            </div>
+
+                                            {/* Turnover Band */}
+                                            <div>
+                                                <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Turnover Band</label>
+                                                <select
+                                                    value={turnover}
+                                                    onChange={(e) => setTurnover(e.target.value)}
+                                                    className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] appearance-none"
+                                                >
+                                                    {turnoverBands.map((band) => (
+                                                        <option key={band.value} value={band.value}>
+                                                            {band.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* Structure */}
+                                            <div>
+                                                <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Structure</label>
+                                                <select
+                                                    value={structure}
+                                                    onChange={(e) => setStructure(e.target.value)}
+                                                    className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] appearance-none"
+                                                >
+                                                    {businessStructures.map((s) => (
+                                                        <option key={s} value={s}>{s}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* Sector */}
+                                            <div>
+                                                <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Business Sector</label>
+                                                <select
+                                                    value={sector}
+                                                    onChange={(e) => setSector(e.target.value)}
+                                                    className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] appearance-none"
+                                                >
+                                                    {sectors.map((s) => (
+                                                        <option key={s} value={s}>{s}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* --- PERSONAL SPECIFIC --- */}
+                                {accountType === 'personal' && (
+                                    <div className="space-y-5">
+                                        <h3 className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-wider">Tax Profile (NTA 2025)</h3>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                            {/* Tax ID */}
+                                            <div>
+                                                <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Tax ID / NIN (Optional)</label>
+                                                <input
+                                                    type="text"
+                                                    value={taxId}
+                                                    onChange={(e) => setTaxId(e.target.value)}
+                                                    className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]"
+                                                    placeholder="Optional"
+                                                />
+                                            </div>
+
+                                            {/* Annual Income */}
+                                            <div>
+                                                <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Annual Income</label>
+                                                <input
+                                                    type="text"
+                                                    value={annualIncome}
+                                                    onChange={(e) => setAnnualIncome(e.target.value)}
+                                                    className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]"
+                                                    placeholder="Est. Annual"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                id="paysRent"
+                                                checked={paysRent}
+                                                onChange={(e) => setPaysRent(e.target.checked)}
+                                                className="w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                                            />
+                                            <label htmlFor="paysRent" className="text-sm text-[var(--foreground)]">
+                                                I pay Rent (eligible for Relief)
+                                            </label>
+                                        </div>
+
+                                        {paysRent && (
+                                            <div>
+                                                <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Rent Amount</label>
+                                                <input
+                                                    type="text"
+                                                    value={rentAmount}
+                                                    onChange={(e) => setRentAmount(e.target.value)}
+                                                    className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)]"
+                                                    placeholder="Annual Rent"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className="pt-2">
+                                    <label className="flex items-start gap-3">
+                                        <input
+                                            type="checkbox"
+                                            required
+                                            className="mt-1 w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                                        />
+                                        <span className="text-sm text-[var(--muted-foreground)]">
+                                            I agree to the <Link href="/terms" className="text-[var(--primary)] hover:underline">Terms</Link> and <Link href="/privacy" className="text-[var(--primary)] hover:underline">Privacy Policy</Link>.
+                                        </span>
                                     </label>
                                 </div>
 
-                                {paysRent && (
-                                    <div>
-                                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Rent Amount</label>
-                                        <input
-                                            type="text"
-                                            value={rentAmount}
-                                            onChange={(e) => setRentAmount(e.target.value)}
-                                            className="w-full px-4 py-3.5 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)]"
-                                            placeholder="Annual Rent"
-                                        />
-                                    </div>
-                                )}
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full btn-gradient py-4 text-lg font-semibold flex items-center justify-center gap-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-lg shadow-blue-500/20"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <Loader2 size={20} className="animate-spin" />
+                                            Creating Account...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Create Account
+                                        </>
+                                    )}
+                                </button>
+                            </form>
+
+                            <div className="mt-8 text-center text-sm text-[var(--muted-foreground)]">
+                                Already have an account?{' '}
+                                <Link href="/login" className="text-[var(--primary)] font-semibold hover:underline">
+                                    Sign in
+                                </Link>
                             </div>
-                        )}
-
-                        <div className="pt-2">
-                            <label className="flex items-start gap-3">
-                                <input
-                                    type="checkbox"
-                                    required
-                                    className="mt-1 w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
-                                />
-                                <span className="text-sm text-[var(--muted-foreground)]">
-                                    I agree to the <Link href="/terms" className="text-[var(--primary)] hover:underline">Terms</Link> and <Link href="/privacy" className="text-[var(--primary)] hover:underline">Privacy Policy</Link>.
-                                </span>
-                            </label>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full btn-gradient py-4 text-lg font-semibold flex items-center justify-center gap-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-lg shadow-blue-500/20"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 size={20} className="animate-spin" />
-                                    Creating Account...
-                                </>
-                            ) : (
-                                <>
-                                    Create Account
-                                </>
-                            )}
-                        </button>
-                    </form>
-
-                    <div className="mt-8 text-center text-sm text-[var(--muted-foreground)]">
-                        Already have an account?{' '}
-                        <Link href="/login" className="text-[var(--primary)] font-semibold hover:underline">
-                            Sign in
-                        </Link>
-                    </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

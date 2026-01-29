@@ -165,13 +165,13 @@ export function GlobalSearch() {
                                                 {result.title}
                                             </p>
                                             <span className={`text-xs font-mono font-medium whitespace-nowrap ${result.type === 'invoice' ? 'text-gray-600 dark:text-gray-400' :
-                                                result.status === 'income' ? 'text-green-600' : 'text-gray-900 dark:text-white'
+                                                result.status === 'income' ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'
                                                 }`}>
                                                 {result.status === 'expense' && '-'}
                                                 {formatCurrency(result.amount)}
                                             </span>
                                         </div>
-                                        <p className="text-xs text-gray-500 truncate flex items-center gap-1">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate flex items-center gap-1">
                                             <span className="capitalize">{result.type}</span>
                                             <span>•</span>
                                             <span>{result.subtitle}</span>

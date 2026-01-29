@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createTransaction, updateTransaction } from '../_actions';
 import { TrendingUp, TrendingDown, Loader2, CheckCircle } from 'lucide-react';
 
@@ -39,7 +39,12 @@ const categories = [
 
 export function TransactionForm({ transaction }: TransactionFormProps) {
     const router = useRouter();
-    const [type, setType] = useState(transaction?.type || 'income');
+    const searchParams = useSearchParams();
+
+    // Get initial type from URL query param, transaction, or default to 'income'
+    const initialType = searchParams.get('type') === 'expense' ? 'expense' : (transaction?.type || 'income');
+
+    const [type, setType] = useState(initialType);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
@@ -81,17 +86,17 @@ export function TransactionForm({ transaction }: TransactionFormProps) {
     }
 
     return (
-        <form action={handleSubmit} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <form action={handleSubmit} className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden">
             {/* Type Selector */}
-            <div className="p-6 border-b border-gray-100">
-                <label className="block text-sm font-medium text-gray-700 mb-3">Transaction Type</label>
+            <div className="p-6 border-b border-gray-100 dark:border-slate-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Transaction Type</label>
                 <div className="grid grid-cols-2 gap-4">
                     <button
                         type="button"
                         onClick={() => setType('income')}
                         className={`p-4 rounded-xl border-2 flex items-center justify-center gap-3 transition ${type === 'income'
-                            ? 'border-green-500 bg-green-50 text-green-700'
-                            : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                            ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                            : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 text-gray-600 dark:text-gray-400'
                             }`}
                     >
                         <TrendingUp size={20} />
@@ -101,8 +106,8 @@ export function TransactionForm({ transaction }: TransactionFormProps) {
                         type="button"
                         onClick={() => setType('expense')}
                         className={`p-4 rounded-xl border-2 flex items-center justify-center gap-3 transition ${type === 'expense'
-                            ? 'border-red-500 bg-red-50 text-red-700'
-                            : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                            ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+                            : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 text-gray-600 dark:text-gray-400'
                             }`}
                     >
                         <TrendingDown size={20} />
@@ -116,37 +121,37 @@ export function TransactionForm({ transaction }: TransactionFormProps) {
                 {/* Amount & Date */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₦)</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount (₦)</label>
                         <input
                             name="amount"
                             type="number"
                             step="0.01"
                             required
                             defaultValue={transaction ? Number(transaction.amount) : ''}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="0.00"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
                         <input
                             name="date"
                             type="date"
                             required
                             defaultValue={transaction ? new Date(transaction.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
                 </div>
 
                 {/* Category */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                     <select
                         name="categoryName"
                         required
                         defaultValue={transaction?.categoryName || ''}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                         <option value="">Select category...</option>
                         {filteredCategories.map((cat) => (
@@ -159,37 +164,37 @@ export function TransactionForm({ transaction }: TransactionFormProps) {
 
                 {/* Description */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
                     <input
                         name="description"
                         type="text"
                         defaultValue={transaction?.description || ''}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="What is this transaction for?"
                     />
                 </div>
 
                 {/* Payee */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         {type === 'income' ? 'Customer / Client' : 'Vendor / Payee'}
                     </label>
                     <input
                         name="payee"
                         type="text"
                         defaultValue={transaction?.payee || ''}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder={type === 'income' ? 'Who paid you?' : 'Who did you pay?'}
                     />
                 </div>
 
                 {/* Payment Method */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Method</label>
                     <select
                         name="paymentMethod"
                         defaultValue={transaction?.paymentMethod || ''}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                         <option value="">Select method...</option>
                         <option value="bank_transfer">Bank Transfer</option>
@@ -202,17 +207,17 @@ export function TransactionForm({ transaction }: TransactionFormProps) {
 
                 {/* Tax Compliance (Expense only) */}
                 {type === 'expense' && (
-                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl space-y-3">
-                        <p className="text-sm font-medium text-yellow-800">Tax Compliance (NTA 2025)</p>
+                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl space-y-3">
+                        <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Tax Compliance (NTA 2025)</p>
                         <label className="flex items-center gap-3">
                             <input
                                 name="hasVatEvidence"
                                 type="checkbox"
                                 defaultChecked={transaction?.hasVatEvidence}
                                 value="true"
-                                className="rounded border-gray-300 text-blue-600"
+                                className="rounded border-gray-300 dark:border-slate-600 text-blue-600"
                             />
-                            <span className="text-sm text-gray-700">I have VAT receipt/invoice evidence</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300">I have VAT receipt/invoice evidence</span>
                         </label>
                         <label className="flex items-center gap-3">
                             <input
@@ -220,9 +225,9 @@ export function TransactionForm({ transaction }: TransactionFormProps) {
                                 type="checkbox"
                                 defaultChecked={transaction?.weCompliant}
                                 value="true"
-                                className="rounded border-gray-300 text-blue-600"
+                                className="rounded border-gray-300 dark:border-slate-600 text-blue-600"
                             />
-                            <span className="text-sm text-gray-700">This expense is wholly & exclusively for business</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300">This expense is wholly & exclusively for business</span>
                         </label>
                         <label className="flex items-center gap-3">
                             <input
@@ -230,20 +235,20 @@ export function TransactionForm({ transaction }: TransactionFormProps) {
                                 type="checkbox"
                                 defaultChecked={transaction?.isDeductible}
                                 value="true"
-                                className="rounded border-gray-300 text-blue-600"
+                                className="rounded border-gray-300 dark:border-slate-600 text-blue-600"
                             />
-                            <span className="text-sm text-gray-700">Mark as tax deductible</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300">Mark as tax deductible</span>
                         </label>
                     </div>
                 )}
             </div>
 
             {/* Actions */}
-            <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+            <div className="p-6 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-700 flex justify-end gap-3">
                 <button
                     type="button"
                     onClick={() => router.back()}
-                    className="px-6 py-2.5 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition"
+                    className="px-6 py-2.5 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition"
                 >
                     Cancel
                 </button>
@@ -259,3 +264,4 @@ export function TransactionForm({ transaction }: TransactionFormProps) {
         </form>
     );
 }
+

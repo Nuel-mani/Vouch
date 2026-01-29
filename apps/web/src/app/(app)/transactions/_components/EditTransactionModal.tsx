@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Loader2, Upload, FileText, Image as ImageIcon, Trash2, RotateCcw } from 'lucide-react';
+import { X, Loader2, Upload, FileText, Image as ImageIcon, Trash2, RotateCcw, TrendingUp, TrendingDown } from 'lucide-react';
 import { updateTransaction } from '../_actions';
 import { useRouter } from 'next/navigation';
 
@@ -11,12 +11,53 @@ interface EditTransactionModalProps {
     onClose: () => void;
 }
 
+// Categories matching the Add Transaction page
+const categories = [
+    { id: 'sales', name: 'Sales', type: 'income' },
+    { id: 'services', name: 'Services', type: 'income' },
+    { id: 'consulting', name: 'Consulting', type: 'income' },
+    { id: 'rent_income', name: 'Rent Income', type: 'income' },
+    { id: 'rent', name: 'Rent', type: 'expense' },
+    { id: 'utilities', name: 'Utilities', type: 'expense' },
+    { id: 'supplies', name: 'Office Supplies', type: 'expense' },
+    { id: 'transport', name: 'Transport', type: 'expense' },
+    { id: 'salaries', name: 'Salaries', type: 'expense' },
+    { id: 'marketing', name: 'Marketing', type: 'expense' },
+    { id: 'professional', name: 'Professional Fees', type: 'expense' },
+    { id: 'other', name: 'Other', type: 'both' },
+];
+
 export function EditTransactionModal({ transaction, userBusinessName, onClose }: EditTransactionModalProps) {
     const [loading, setLoading] = useState(false);
     const [preview, setPreview] = useState<string | null>(null);
     const [removedReceipts, setRemovedReceipts] = useState<string[]>([]);
     const [newFile, setNewFile] = useState<File | null>(null);
     const router = useRouter();
+
+    // Transaction type state (allows reclassification)
+    const [transactionType, setTransactionType] = useState<'income' | 'expense'>(
+        transaction.type === 'expense' ? 'expense' : 'income'
+    );
+
+    // Category state (to properly handle controlled select)
+    const [selectedCategory, setSelectedCategory] = useState<string>(transaction.categoryName || '');
+
+    // Filter categories based on selected type
+    const filteredCategories = categories.filter(
+        (c) => c.type === transactionType || c.type === 'both'
+    );
+
+    // When type changes, reset category if current selection is not valid for new type
+    const handleTypeChange = (newType: 'income' | 'expense') => {
+        setTransactionType(newType);
+        // Check if current category is still valid for new type
+        const validCategory = categories.find(
+            c => c.name === selectedCategory && (c.type === newType || c.type === 'both')
+        );
+        if (!validCategory) {
+            setSelectedCategory(''); // Reset category if not valid for new type
+        }
+    };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -43,6 +84,9 @@ export function EditTransactionModal({ transaction, userBusinessName, onClose }:
         setLoading(true);
 
         const formData = new FormData(e.currentTarget);
+
+        // Set the transaction type from state
+        formData.set('type', transactionType);
 
         try {
             await updateTransaction(transaction.id, formData);
@@ -95,9 +139,39 @@ export function EditTransactionModal({ transaction, userBusinessName, onClose }:
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    <input type="hidden" name="type" value={transaction.type || ''} />
+                <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                     <input type="hidden" name="date" value={new Date(transaction.date).toISOString()} />
+
+                    {/* Transaction Type Selector */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Transaction Type
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                type="button"
+                                onClick={() => handleTypeChange('income')}
+                                className={`p-3 rounded-xl border-2 flex items-center justify-center gap-2 transition-all ${transactionType === 'income'
+                                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                                    : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 text-gray-600 dark:text-gray-400'
+                                    }`}
+                            >
+                                <TrendingUp size={18} />
+                                <span className="font-medium">Income</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleTypeChange('expense')}
+                                className={`p-3 rounded-xl border-2 flex items-center justify-center gap-2 transition-all ${transactionType === 'expense'
+                                    ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+                                    : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 text-gray-600 dark:text-gray-400'
+                                    }`}
+                            >
+                                <TrendingDown size={18} />
+                                <span className="font-medium">Expense</span>
+                            </button>
+                        </div>
+                    </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -147,12 +221,19 @@ export function EditTransactionModal({ transaction, userBusinessName, onClose }:
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Category
                             </label>
-                            <input
-                                type="text"
+                            <select
                                 name="categoryName"
-                                defaultValue={transaction.categoryName || ''}
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
                                 className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                            >
+                                <option value="">Select category...</option>
+                                {filteredCategories.map((cat) => (
+                                    <option key={cat.id} value={cat.name}>
+                                        {cat.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -164,9 +245,10 @@ export function EditTransactionModal({ transaction, userBusinessName, onClose }:
                                 className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <option value="">Select...</option>
+                                <option value="bank_transfer">Bank Transfer</option>
                                 <option value="cash">Cash</option>
                                 <option value="card">Card</option>
-                                <option value="transfer">Transfer</option>
+                                <option value="mobile_money">Mobile Money</option>
                             </select>
                         </div>
                     </div>
@@ -313,7 +395,7 @@ export function EditTransactionModal({ transaction, userBusinessName, onClose }:
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium"
+                            className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 font-medium"
                         >
                             Cancel
                         </button>

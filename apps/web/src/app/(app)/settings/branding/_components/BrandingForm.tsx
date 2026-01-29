@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Palette, Image as ImageIcon, FileText, CheckCircle, Loader2, Upload, Building, Calculator, Scan, Stamp, Eye, EyeOff, X } from 'lucide-react';
 import { updateBrandStudio } from '../../_actions';
 import { LivePreview } from './LivePreview';
@@ -58,6 +58,11 @@ export function BrandingForm({ user }: BrandingFormProps) {
     const [invoiceFont, setInvoiceFont] = useState(user.invoiceFont || 'inter');
     const [showWatermark, setShowWatermark] = useState(user.showWatermark || false);
 
+    // Drag and drop state
+    const [logoDragActive, setLogoDragActive] = useState(false);
+    const [stampDragActive, setStampDragActive] = useState(false);
+    const logoInputRef = React.useRef<HTMLInputElement>(null);
+    const stampInputRef = React.useRef<HTMLInputElement>(null);
 
     // Business Details State (for preview)
     const [businessName, setBusinessName] = useState(user.businessName || '');
@@ -103,17 +108,62 @@ export function BrandingForm({ user }: BrandingFormProps) {
         });
     };
 
+    // Drag handlers for logo
+    const handleLogoDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setLogoDragActive(true);
+        } else if (e.type === 'dragleave') {
+            setLogoDragActive(false);
+        }
+    };
+
+    const handleLogoDrop = async (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setLogoDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            await processLogoFile(e.dataTransfer.files[0]);
+        }
+    };
+
+    // Drag handlers for stamp
+    const handleStampDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setStampDragActive(true);
+        } else if (e.type === 'dragleave') {
+            setStampDragActive(false);
+        }
+    };
+
+    const handleStampDrop = async (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setStampDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            await processStampFile(e.dataTransfer.files[0]);
+        }
+    };
+
+    // Process logo file
+    const processLogoFile = async (file: File) => {
+        try {
+            const compressedBase64 = await compressImage(file);
+            setLogoUrl(compressedBase64);
+            analyzeColor(compressedBase64);
+        } catch (err) {
+            console.error("Image compression failed", err);
+        }
+    };
+
     // Handle Logo Upload & Smart Color DNA
     const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            try {
-                const compressedBase64 = await compressImage(file);
-                setLogoUrl(compressedBase64);
-                analyzeColor(compressedBase64);
-            } catch (err) {
-                console.error("Image compression failed", err);
-            }
+            await processLogoFile(file);
         }
     };
 
@@ -144,15 +194,20 @@ export function BrandingForm({ user }: BrandingFormProps) {
         return hex.length === 1 ? '0' + hex : hex;
     }).join('');
 
+    // Process stamp file
+    const processStampFile = async (file: File) => {
+        try {
+            const compressedBase64 = await compressImage(file, 400); // Smaller max width for stamps
+            setStampUrl(compressedBase64);
+        } catch (err) {
+            console.error("Stamp compression failed", err);
+        }
+    };
+
     const handleStampUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            try {
-                const compressedBase64 = await compressImage(file, 400); // Smaller max width for stamps
-                setStampUrl(compressedBase64);
-            } catch (err) {
-                console.error("Stamp compression failed", err);
-            }
+            await processStampFile(file);
         }
     };
 
@@ -219,8 +274,24 @@ export function BrandingForm({ user }: BrandingFormProps) {
                             {/* Logo Upload */}
                             <div className="space-y-3">
                                 <label className="block text-sm font-medium">Company Logo</label>
-                                <div className="border-2 border-dashed border-[var(--border)] rounded-xl p-4 text-center hover:bg-[var(--muted)] transition-colors relative group cursor-pointer">
-                                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
+                                <div
+                                    onClick={() => logoInputRef.current?.click()}
+                                    onDragEnter={handleLogoDrag}
+                                    onDragLeave={handleLogoDrag}
+                                    onDragOver={handleLogoDrag}
+                                    onDrop={handleLogoDrop}
+                                    className={`border-2 border-dashed rounded-xl p-4 text-center transition-all cursor-pointer ${logoDragActive
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.02]'
+                                            : 'border-[var(--border)] hover:bg-[var(--muted)]'
+                                        }`}
+                                >
+                                    <input
+                                        type="file"
+                                        ref={logoInputRef}
+                                        accept="image/*"
+                                        onChange={handleLogoUpload}
+                                        className="hidden"
+                                    />
                                     {logoUrl ? (
                                         <div className="relative h-20 w-full">
                                             <img src={logoUrl} alt="Logo" className="h-full w-full object-contain" />
@@ -232,8 +303,8 @@ export function BrandingForm({ user }: BrandingFormProps) {
                                         </div>
                                     ) : (
                                         <div className="py-4">
-                                            <Upload className="mx-auto h-8 w-8 text-[var(--muted-foreground)] mb-2" />
-                                            <span className="text-xs text-[var(--muted-foreground)]">Click to upload</span>
+                                            <Upload className={`mx-auto h-8 w-8 mb-2 transition-transform duration-300 ${logoDragActive ? 'text-blue-500 scale-110' : 'text-[var(--muted-foreground)]'}`} />
+                                            <span className="text-xs text-[var(--muted-foreground)]">Click or drag to upload</span>
                                         </div>
                                     )}
                                 </div>
@@ -243,16 +314,32 @@ export function BrandingForm({ user }: BrandingFormProps) {
                             {/* Digital Stamp */}
                             <div className="space-y-3">
                                 <label className="block text-sm font-medium">Digital Stamp / Seal</label>
-                                <div className="border-2 border-dashed border-[var(--border)] rounded-xl p-4 text-center hover:bg-[var(--muted)] transition-colors relative group cursor-pointer">
-                                    <input type="file" accept="image/png" onChange={handleStampUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
+                                <div
+                                    onClick={() => stampInputRef.current?.click()}
+                                    onDragEnter={handleStampDrag}
+                                    onDragLeave={handleStampDrag}
+                                    onDragOver={handleStampDrag}
+                                    onDrop={handleStampDrop}
+                                    className={`border-2 border-dashed rounded-xl p-4 text-center transition-all cursor-pointer ${stampDragActive
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.02]'
+                                            : 'border-[var(--border)] hover:bg-[var(--muted)]'
+                                        }`}
+                                >
+                                    <input
+                                        type="file"
+                                        ref={stampInputRef}
+                                        accept="image/png"
+                                        onChange={handleStampUpload}
+                                        className="hidden"
+                                    />
                                     {stampUrl ? (
                                         <div className="relative h-20 w-full">
                                             <img src={stampUrl} alt="Stamp" className="h-full w-full object-contain" />
                                         </div>
                                     ) : (
                                         <div className="py-4">
-                                            <Stamp className="mx-auto h-8 w-8 text-[var(--muted-foreground)] mb-2" />
-                                            <span className="text-xs text-[var(--muted-foreground)]">Upload PNG</span>
+                                            <Stamp className={`mx-auto h-8 w-8 mb-2 transition-transform duration-300 ${stampDragActive ? 'text-blue-500 scale-110' : 'text-[var(--muted-foreground)]'}`} />
+                                            <span className="text-xs text-[var(--muted-foreground)]">Click or drag PNG</span>
                                         </div>
                                     )}
                                 </div>

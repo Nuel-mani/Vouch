@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { X, Upload, Check, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -23,9 +23,37 @@ export function ValidateInvoiceModal({
 }: ValidateInvoiceModalProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [method, setMethod] = useState<'proof' | 'signature' | 'manual'>('proof');
+    const [dragActive, setDragActive] = useState(false);
+    const [proofFile, setProofFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
 
     if (!isOpen) return null;
+
+    const handleDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setDragActive(true);
+        } else if (e.type === 'dragleave') {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            setProofFile(e.dataTransfer.files[0]);
+        }
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setProofFile(e.target.files[0]);
+        }
+    };
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -34,6 +62,11 @@ export function ValidateInvoiceModal({
             const formData = new FormData(e.currentTarget);
             formData.append('invoiceId', invoiceId);
             formData.append('validationMethod', method);
+
+            // Append the proof file if we have one from drag and drop
+            if (proofFile && method === 'proof') {
+                formData.set('proofFile', proofFile);
+            }
 
             await onValidate(formData);
             onClose();
@@ -115,16 +148,40 @@ export function ValidateInvoiceModal({
                                 <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
                                     Upload Payment Proof
                                 </label>
-                                <div className="border-2 border-dashed border-[var(--border)] rounded-xl p-6 text-center hover:bg-[var(--muted)] transition-colors cursor-pointer relative">
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    onDragEnter={handleDrag}
+                                    onDragLeave={handleDrag}
+                                    onDragOver={handleDrag}
+                                    onDrop={handleDrop}
+                                    className={`border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer ${proofFile
+                                            ? 'border-green-500 bg-green-50 dark:bg-green-900/10'
+                                            : dragActive
+                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.02]'
+                                                : 'border-[var(--border)] hover:bg-[var(--muted)]'
+                                        }`}
+                                >
                                     <input
                                         type="file"
+                                        ref={fileInputRef}
                                         name="proofFile"
                                         accept="image/*,application/pdf"
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        required
+                                        onChange={handleFileChange}
+                                        className="hidden"
+                                        required={!proofFile}
                                     />
-                                    <Upload className="mx-auto text-[var(--muted-foreground)] mb-2" size={24} />
-                                    <p className="text-sm text-[var(--muted-foreground)]">Click to upload receipt</p>
+                                    {proofFile ? (
+                                        <div className="text-green-700 dark:text-green-400">
+                                            <Check className="mx-auto mb-2" size={24} />
+                                            <p className="text-sm font-medium">{proofFile.name}</p>
+                                            <p className="text-xs opacity-75">{(proofFile.size / 1024).toFixed(1)} KB</p>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <Upload className={`mx-auto mb-2 transition-transform duration-300 ${dragActive ? 'text-blue-500 scale-110' : 'text-[var(--muted-foreground)]'}`} size={24} />
+                                            <p className="text-sm text-[var(--muted-foreground)]">Click to upload or drag and drop</p>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         )}

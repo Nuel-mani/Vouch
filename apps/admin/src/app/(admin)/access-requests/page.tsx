@@ -1,8 +1,24 @@
 import { db } from '@vouch/db';
 import { CheckCircle, Clock, Shield, Key, AlertTriangle } from 'lucide-react';
 import { RequestActions, ApprovedRequestActions } from './components/RequestActions';
+import { VerificationQueue } from './components/VerificationQueue';
 
 export default async function AccessRequestsPage() {
+    // Fetch ALL unverified users (not just those who requested help)
+    const verificationRequests = await db.user.findMany({
+        where: {
+            emailVerified: false
+        },
+        select: {
+            id: true,
+            email: true,
+            businessName: true,
+            createdAt: true,
+            verificationHelpRequested: true,
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+
     // Fetch pending requests
     const pendingRequests = await db.passwordResetRequest.findMany({
         where: { status: 'pending' },
@@ -45,6 +61,12 @@ export default async function AccessRequestsPage() {
                     <p className="text-slate-400">Security / Identity Verification Queue</p>
                 </div>
                 <div className="flex gap-3">
+                    {verificationRequests.length > 0 && (
+                        <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg px-4 py-2 text-purple-300">
+                            <span className="font-bold mr-2">{verificationRequests.length}</span>
+                            Verifications
+                        </div>
+                    )}
                     <div className="bg-slate-800 border border-amber-500/30 rounded-lg px-4 py-2 text-slate-300">
                         <span className="font-bold text-amber-500 mr-2">{pendingRequests.length}</span>
                         Pending
@@ -56,6 +78,9 @@ export default async function AccessRequestsPage() {
                 </div>
             </div>
 
+            {/* Verification Queue (High Priority) */}
+            <VerificationQueue users={verificationRequests} />
+
             {/* Pending Requests Section */}
             <section>
                 <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -65,7 +90,7 @@ export default async function AccessRequestsPage() {
                 {pendingRequests.length === 0 ? (
                     <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-8 text-center">
                         <CheckCircle size={24} className="text-green-500 mx-auto mb-2" />
-                        <p className="text-slate-400">No pending requests.</p>
+                        <p className="text-slate-400">No pending password reset requests.</p>
                     </div>
                 ) : (
                     <div className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">

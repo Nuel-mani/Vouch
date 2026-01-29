@@ -4,8 +4,7 @@ const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null;
 
-const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@vouch.ng';
-const FROM_NAME = 'Vouch';
+const FROM_EMAIL = process.env.EMAIL_FROM || 'Vouch <noreply@vouch.ng>';
 
 interface EmailOptions {
   to: string;
@@ -25,12 +24,18 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
 
   try {
     const result = await resend.emails.send({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      from: FROM_EMAIL,
       to: options.to,
       subject: options.subject,
       html: options.html,
       text: options.text,
     });
+
+    // Log full response for debugging
+    if (result.error) {
+      console.error('Resend API error:', result.error);
+      return false;
+    }
 
     console.log('Email sent:', result.data?.id);
     return true;
@@ -237,5 +242,53 @@ export async function sendTaxReminderEmail(params: {
     to,
     subject: `⏰ Tax Reminder: ${taxType} due ${deadline}`,
     html,
+  });
+}
+
+/**
+ * Send email verification link
+ */
+export async function sendVerificationEmail(email: string, token: string): Promise<boolean> {
+  const appUrl = process.env.APP_URL || 'http://localhost:3000';
+  const verifyUrl = `${appUrl}/verify-email?token=${token}`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin: 0; padding: 40px 20px; font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+    <div style="background: #2252c9; padding: 32px; text-align: center;">
+      <h1 style="color: white; margin: 0; font-size: 24px;">Verify your Email</h1>
+    </div>
+    <div style="padding: 32px; text-align: center;">
+      <p style="color: #333; font-size: 16px; margin: 0 0 24px;">
+        Click the button below to verify your email address and activate your account.
+      </p>
+      
+      <a href="${verifyUrl}" style="display: inline-block; background: #2252c9; color: white; text-align: center; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-bottom: 24px;">
+        Verify Email Address
+      </a>
+
+      <p style="color: #666; font-size: 14px; margin: 0;">
+        Or copy and paste this link into your browser:<br>
+        <a href="${verifyUrl}" style="color: #2252c9;">${verifyUrl}</a>
+      </p>
+    </div>
+    <div style="background: #f5f5f5; padding: 24px; text-align: center; border-top: 1px solid #eee;">
+      <p style="color: #999; font-size: 12px; margin: 0;">
+        Sent via <span style="font-weight: 600;">Vouch</span>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: 'Verify your Vouch account',
+    html,
+    text: `verify your account by visiting: ${verifyUrl}`,
   });
 }

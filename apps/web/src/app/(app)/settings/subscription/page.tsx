@@ -69,8 +69,8 @@ export default async function SubscriptionPage() {
     return (
         <div className="max-w-5xl">
             <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-900">Subscription</h1>
-                <p className="text-gray-500 mt-1">Manage your plan and billing</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Subscription</h1>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">Manage your plan and billing</p>
             </div>
 
             {/* Current Plan Banner */}
@@ -105,11 +105,11 @@ export default async function SubscriptionPage() {
                     return (
                         <div
                             key={plan.id}
-                            className={`relative bg-white rounded-2xl border-2 p-6 ${plan.popular
+                            className={`relative bg-white dark:bg-slate-800 rounded-2xl border-2 p-6 ${plan.popular
                                 ? 'border-blue-500 shadow-lg'
                                 : isCurrentPlan
                                     ? 'border-green-500'
-                                    : 'border-gray-200'
+                                    : 'border-gray-200 dark:border-slate-700'
                                 }`}
                         >
                             {plan.popular && (
@@ -124,25 +124,25 @@ export default async function SubscriptionPage() {
                             )}
 
                             <div className="flex items-center gap-3 mb-4">
-                                <div className={`p-2 rounded-lg ${plan.popular ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
+                                <div className={`p-2 rounded-lg ${plan.popular ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400'}`}>
                                     <Icon size={24} />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900">{plan.name}</h3>
-                                    <p className="text-xs text-gray-500">{plan.description}</p>
+                                    <h3 className="font-bold text-gray-900 dark:text-white">{plan.name}</h3>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{plan.description}</p>
                                 </div>
                             </div>
 
                             <div className="mb-6">
-                                <span className="text-3xl font-black text-gray-900">
+                                <span className="text-3xl font-black text-gray-900 dark:text-white">
                                     ₦{plan.price.toLocaleString()}
                                 </span>
-                                <span className="text-gray-500">/month</span>
+                                <span className="text-gray-500 dark:text-gray-400">/month</span>
                             </div>
 
                             <ul className="space-y-3 mb-6">
                                 {plan.features.map((feature, i) => (
-                                    <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                                    <li key={i} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                                         <Check size={16} className="text-green-500 flex-shrink-0" />
                                         {feature}
                                     </li>
@@ -152,10 +152,10 @@ export default async function SubscriptionPage() {
                             <button
                                 disabled={isCurrentPlan}
                                 className={`w-full py-2.5 rounded-xl font-medium transition ${isCurrentPlan
-                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    ? 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                                     : plan.popular
                                         ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
                                     }`}
                             >
                                 {isCurrentPlan ? 'Current Plan' : plan.price === 0 ? 'Downgrade' : 'Upgrade'}
@@ -166,11 +166,11 @@ export default async function SubscriptionPage() {
             </div>
 
             {/* Billing History */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                    <h3 className="font-semibold text-gray-900">Billing History</h3>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Billing History</h3>
                 </div>
-                <div className="p-6 text-center text-gray-500">
+                <div className="p-6 text-center text-gray-500 dark:text-gray-400">
                     <p>No billing history available</p>
                     <p className="text-sm mt-1">Your payment history will appear here</p>
                 </div>
@@ -178,3 +178,4 @@ export default async function SubscriptionPage() {
         </div>
     );
 }
+

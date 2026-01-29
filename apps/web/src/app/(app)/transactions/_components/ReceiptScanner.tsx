@@ -118,11 +118,11 @@ export function ReceiptScanner({ onScanComplete, onClose }: ReceiptScannerProps)
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-900">Scan Receipt</h2>
-                    <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Scan Receipt</h2>
+                    <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg">
                         <X size={20} />
                     </button>
                 </div>
@@ -130,7 +130,7 @@ export function ReceiptScanner({ onScanComplete, onClose }: ReceiptScannerProps)
                 {/* Content */}
                 <div className="p-6">
                     {error && (
-                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-700 text-sm">
+                        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-2 text-red-700 dark:text-red-400 text-sm">
                             <AlertCircle size={16} />
                             {error}
                         </div>
@@ -138,7 +138,7 @@ export function ReceiptScanner({ onScanComplete, onClose }: ReceiptScannerProps)
 
                     {!preview && !cameraActive && (
                         <div className="space-y-4">
-                            <p className="text-gray-500 text-sm text-center">
+                            <p className="text-gray-500 dark:text-gray-400 text-sm text-center">
                                 Take a photo or upload an image of your receipt. AI will extract the details automatically.
                             </p>
 
@@ -146,17 +146,17 @@ export function ReceiptScanner({ onScanComplete, onClose }: ReceiptScannerProps)
                             <div className="grid grid-cols-2 gap-4">
                                 <button
                                     onClick={startCamera}
-                                    className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition"
+                                    className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-gray-200 dark:border-slate-600 rounded-xl hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"
                                 >
                                     <Camera size={32} className="text-blue-600" />
-                                    <span className="font-medium text-gray-700">Take Photo</span>
+                                    <span className="font-medium text-gray-700 dark:text-gray-300">Take Photo</span>
                                 </button>
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition"
+                                    className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-gray-200 dark:border-slate-600 rounded-xl hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"
                                 >
                                     <Upload size={32} className="text-blue-600" />
-                                    <span className="font-medium text-gray-700">Upload Image</span>
+                                    <span className="font-medium text-gray-700 dark:text-gray-300">Upload Image</span>
                                 </button>
                             </div>
 
@@ -195,46 +195,46 @@ export function ReceiptScanner({ onScanComplete, onClose }: ReceiptScannerProps)
                                 <img
                                     src={preview}
                                     alt="Receipt preview"
-                                    className="w-full rounded-xl max-h-64 object-contain bg-gray-100"
+                                    className="w-full rounded-xl max-h-64 object-contain bg-gray-100 dark:bg-slate-700"
                                 />
                                 {scanning && (
-                                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-xl">
+                                    <div className="absolute inset-0 bg-white/80 dark:bg-slate-800/80 flex items-center justify-center rounded-xl">
                                         <div className="text-center">
                                             <Loader2 size={32} className="animate-spin text-blue-600 mx-auto mb-2" />
-                                            <p className="text-sm text-gray-600">Analyzing receipt...</p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">Analyzing receipt...</p>
                                         </div>
                                     </div>
                                 )}
                             </div>
 
                             {result && !scanning && (
-                                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                                    <div className="flex items-center gap-2 mb-3 text-green-700">
+                                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
+                                    <div className="flex items-center gap-2 mb-3 text-green-700 dark:text-green-400">
                                         <CheckCircle size={18} />
                                         <span className="font-medium">Receipt scanned successfully!</span>
                                     </div>
                                     <dl className="text-sm space-y-2">
                                         <div className="flex justify-between">
-                                            <dt className="text-gray-500">Vendor</dt>
-                                            <dd className="font-medium text-gray-900">{result.vendor || 'Unknown'}</dd>
+                                            <dt className="text-gray-500 dark:text-gray-400">Vendor</dt>
+                                            <dd className="font-medium text-gray-900 dark:text-white">{result.vendor || 'Unknown'}</dd>
                                         </div>
                                         <div className="flex justify-between">
-                                            <dt className="text-gray-500">Amount</dt>
-                                            <dd className="font-medium text-gray-900">
+                                            <dt className="text-gray-500 dark:text-gray-400">Amount</dt>
+                                            <dd className="font-medium text-gray-900 dark:text-white">
                                                 ₦{result.amount?.toLocaleString() || 0}
                                             </dd>
                                         </div>
                                         <div className="flex justify-between">
-                                            <dt className="text-gray-500">Date</dt>
-                                            <dd className="font-medium text-gray-900">{result.date}</dd>
+                                            <dt className="text-gray-500 dark:text-gray-400">Date</dt>
+                                            <dd className="font-medium text-gray-900 dark:text-white">{result.date}</dd>
                                         </div>
                                         <div className="flex justify-between">
-                                            <dt className="text-gray-500">Category</dt>
-                                            <dd className="font-medium text-gray-900">{result.category}</dd>
+                                            <dt className="text-gray-500 dark:text-gray-400">Category</dt>
+                                            <dd className="font-medium text-gray-900 dark:text-white">{result.category}</dd>
                                         </div>
                                         {result.hasVatNumber && (
                                             <div className="flex justify-between">
-                                                <dt className="text-gray-500">VAT Number</dt>
+                                                <dt className="text-gray-500 dark:text-gray-400">VAT Number</dt>
                                                 <dd className="font-medium text-green-600">{result.vatNumber || 'Found'}</dd>
                                             </div>
                                         )}
@@ -245,7 +245,7 @@ export function ReceiptScanner({ onScanComplete, onClose }: ReceiptScannerProps)
                             <div className="flex gap-3">
                                 <button
                                     onClick={reset}
-                                    className="flex-1 py-2.5 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition"
+                                    className="flex-1 py-2.5 border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition"
                                 >
                                     Retake
                                 </button>
@@ -264,3 +264,4 @@ export function ReceiptScanner({ onScanComplete, onClose }: ReceiptScannerProps)
         </div>
     );
 }
+
