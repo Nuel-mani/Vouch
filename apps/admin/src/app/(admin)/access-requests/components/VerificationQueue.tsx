@@ -10,7 +10,7 @@ interface User {
     email: string | null;
     businessName: string | null;
     createdAt: Date | null;
-    verificationHelpRequested?: boolean;
+    verificationHelpRequested: boolean | null;
 }
 
 export function VerificationQueue({ users }: { users: User[] }) {
