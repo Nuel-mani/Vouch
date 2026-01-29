@@ -282,3 +282,71 @@ export async function validateInvoice(formData: FormData) {
     revalidatePath('/invoices');
     revalidatePath('/optimizer'); // Important for Receipt Hunter update
 }
+
+export async function exportInvoices(filters: any) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('access_token')?.value;
+    const user = await validateSession(token!);
+
+    if (!user) {
+        return { success: false, error: 'Unauthorized' };
+    }
+
+    // Reconstruct where clause matching page.tsx
+    const where: any = { userId: user.id };
+
+    if (filters.status && filters.status !== 'all') {
+        where.status = filters.status;
+    }
+
+    if (filters.search) {
+        const isNumeric = !isNaN(Number(filters.search));
+        if (isNumeric) {
+            where.OR = [
+                { serialId: Number(filters.search) },
+                { customerName: { contains: filters.search, mode: 'insensitive' } }
+            ];
+        } else {
+            where.OR = [
+                { customerName: { contains: filters.search, mode: 'insensitive' } },
+                { customerEmail: { contains: filters.search, mode: 'insensitive' } }
+            ];
+        }
+    }
+
+    try {
+        const invoices = await db.invoice.findMany({
+            where,
+            orderBy: { dateIssued: 'desc' },
+            take: 5000
+        });
+
+        // Generate CSV
+        const headers = ['Serial ID', 'Customer', 'Email', 'Amount', 'VAT', 'Date Issued', 'Date Due', 'Date Paid', 'Status', 'Notes'];
+        const csvRows = [headers.join(',')];
+
+        for (const inv of invoices) {
+            const row = [
+                inv.serialId.toString(),
+                `"${(inv.customerName || '').replace(/"/g, '""')}"`,
+                `"${(inv.customerEmail || '').replace(/"/g, '""')}"`,
+                inv.amount.toString(),
+                (inv.vatAmount || 0).toString(),
+                inv.dateIssued ? inv.dateIssued.toISOString().split('T')[0] : '',
+                inv.dateDue ? inv.dateDue.toISOString().split('T')[0] : '',
+                inv.datePaid ? inv.datePaid.toISOString().split('T')[0] : '',
+                inv.status || 'draft',
+                `"${(inv.notes || '').replace(/"/g, '""')}"`
+            ];
+            csvRows.push(row.join(','));
+        }
+
+        const csvString = csvRows.join('\n');
+        const filename = `invoices-${new Date().toISOString().split('T')[0]}.csv`;
+
+        return { success: true, data: csvString, filename };
+    } catch (error: any) {
+        console.error('Export failed:', error);
+        return { success: false, error: 'Failed to export invoices' };
+    }
+}

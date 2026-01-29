@@ -8,6 +8,8 @@ import { TransactionList } from './_components/TransactionList';
 import { TransactionFilters } from './_components/TransactionFilters';
 import { ImportButton } from './_components/ImportButton';
 import type { Transaction } from '@vouch/types';
+import { ExportButton } from '../_components/ExportButton';
+import { exportTransactions } from './_actions';
 
 interface PageProps {
     searchParams: Promise<{
@@ -167,10 +169,11 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                 </div>
                 <div className="flex gap-3">
                     <ImportButton userAccountType={user.accountType || 'personal'} />
-                    <button className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-[var(--border)] rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] transition">
-                        <Download size={16} />
-                        Export
-                    </button>
+                    <ExportButton
+                        model="transaction"
+                        filters={params}
+                        exportAction={exportTransactions}
+                    />
                     <Link
                         href="/transactions/new"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition"

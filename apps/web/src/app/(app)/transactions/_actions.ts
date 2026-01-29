@@ -279,7 +279,91 @@ export async function bulkCreateTransactionsJSON(json: string) {
         });
     }
 
-    revalidatePath('/transactions');
     revalidatePath('/dashboard');
     return { success: true, count: dataToCreate.length, skipped: transactions.length - dataToCreate.length };
+}
+
+export async function exportTransactions(filters: any) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('access_token')?.value;
+    const user = await validateSession(token!);
+
+    if (!user) {
+        return { success: false, error: 'Unauthorized' };
+    }
+
+    // Reconstruct the where clause from filters (matching page.tsx logic)
+    const where: any = {
+        userId: user.id,
+        deletedAt: filters.status === 'archived' ? { not: null } : null
+    };
+
+    if (filters.type && filters.type !== 'all') {
+        where.type = filters.type;
+    }
+
+    if (filters.category) {
+        where.categoryId = filters.category;
+    }
+
+    if (filters.startDate) {
+        where.date = { ...where.date, gte: new Date(filters.startDate) };
+    }
+
+    if (filters.endDate) {
+        where.date = { ...where.date, lte: new Date(filters.endDate) };
+    }
+
+    if (filters.search) {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filters.search);
+        if (isUUID) {
+            where.OR = [
+                { id: filters.search },
+                { description: { contains: filters.search, mode: 'insensitive' } },
+            ];
+        } else {
+            where.OR = [
+                { description: { contains: filters.search, mode: 'insensitive' } },
+                { payee: { contains: filters.search, mode: 'insensitive' } },
+                { refId: { contains: filters.search, mode: 'insensitive' } },
+                { categoryName: { contains: filters.search, mode: 'insensitive' } },
+            ];
+        }
+    }
+
+    try {
+        const transactions = await db.transaction.findMany({
+            where,
+            orderBy: { date: 'desc' },
+            take: 5000, // Reasonable limit for export
+        });
+
+        // Generate CSV
+        const headers = ['Date', 'Type', 'Description', 'Payee', 'Category', 'Amount', 'VAT', 'Method', 'Reference', 'Status'];
+        const csvRows = [headers.join(',')];
+
+        for (const t of transactions) {
+            const row = [
+                t.date.toISOString().split('T')[0],
+                t.type || 'expense',
+                `"${(t.description || '').replace(/"/g, '""')}"`,
+                `"${(t.payee || '').replace(/"/g, '""')}"`,
+                `"${(t.categoryName || '').replace(/"/g, '""')}"`,
+                t.amount.toString(),
+                (t.vatAmount || 0).toString(),
+                t.paymentMethod || '',
+                t.refId || '',
+                t.deletedAt ? 'Archived' : 'Active'
+            ];
+            csvRows.push(row.join(','));
+        }
+
+        const csvString = csvRows.join('\n');
+        const filename = `transactions-${new Date().toISOString().split('T')[0]}.csv`;
+
+        return { success: true, data: csvString, filename };
+    } catch (error: any) {
+        console.error('Export failed:', error);
+        return { success: false, error: 'Failed to export transactions' };
+    }
 }

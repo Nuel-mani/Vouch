@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [1.2.0] - 2026-01-29
+
+### Added
+- **Export Functionality**: Added CSV export capability to lists.
+  - **Transaction Export**: Filter-aware CSV export for transactions with headers: Date, Type, Description, Payee, Category, Amount, VAT, Method, Reference, Status.
+  - **Invoice Export**: Filter-aware CSV export for invoices with headers: Serial ID, Customer, Email, Amount, VAT, Dates (Issued/Due/Paid), Status, Notes.
+
 ## [1.1.0] - 2026-01-29
 
 ### Added
@@ -62,9 +69,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Global Search**: Updated search results dropdown with proper dark mode backgrounds and text colors.
   - **Subscription Page**: Added dark mode variants for pricing plans and billing history tables.
 - **Transaction Grouping**: Transactions are now grouped by month and year with sticky headers for better organization.
-- **Smart Transaction Details**: Conditional dropdown views in transaction list:
   - **Invoice Actions**: Shows invoice breakdown (items, subtotal, VAT) for invoice-linked transactions.
   - **Expense Details**: Shows category, receipt, and payment info for bank-imported/manual transactions.
+
 
 ### Fixed
 - **Invoice Creation Error**: Fixed "Unique constraint failed" error by using globally unique `refId` (`INV-{uuid}`) instead of user-scoped `serialId` for auto-created transactions.

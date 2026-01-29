@@ -4,6 +4,8 @@ import { db } from '@vouch/db';
 import Link from 'next/link';
 import { Plus, Download, FileText, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { InvoiceList } from './_components/InvoiceList';
+import { ExportButton } from '../_components/ExportButton';
+import { exportInvoices } from './_actions';
 
 interface PageProps {
     searchParams: Promise<{
@@ -128,10 +130,11 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
                     </p>
                 </div>
                 <div className="flex gap-3">
-                    <button className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-[var(--border)] rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] transition">
-                        <Download size={16} />
-                        Export
-                    </button>
+                    <ExportButton
+                        model="invoice"
+                        filters={params}
+                        exportAction={exportInvoices}
+                    />
                     <Link
                         href="/invoices/new"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition"
