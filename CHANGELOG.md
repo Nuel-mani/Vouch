@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-<!-- AI AGENTS: Add your changes here under the appropriate category -->
-<!-- When releasing, move these to a new version section below -->
+### Added
+
+## [1.1.0] - 2026-01-29
 
 ### Added
 - **Email Verification System**: Complete mandatory email verification for new registrations.
@@ -60,6 +61,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Edit Transaction Modal**: Fixed contrast issues for cancel button, inputs, and checkbox labels.
   - **Global Search**: Updated search results dropdown with proper dark mode backgrounds and text colors.
   - **Subscription Page**: Added dark mode variants for pricing plans and billing history tables.
+- **Transaction Grouping**: Transactions are now grouped by month and year with sticky headers for better organization.
+- **Smart Transaction Details**: Conditional dropdown views in transaction list:
+  - **Invoice Actions**: Shows invoice breakdown (items, subtotal, VAT) for invoice-linked transactions.
+  - **Expense Details**: Shows category, receipt, and payment info for bank-imported/manual transactions.
+
+### Fixed
+- **Invoice Creation Error**: Fixed "Unique constraint failed" error by using globally unique `refId` (`INV-{uuid}`) instead of user-scoped `serialId` for auto-created transactions.
+- **Decimal Serialization Error**: Fixed server-to-client error where `Decimal` and `Date` objects in invoice data caused page crashes. Applied fix to both Transactions and Invoices pages by explicitly converting values to primitives.
+- **Transaction Dropdown**: Fixed issue where only "Expense" transactions could be expanded. now all transactions are expandable to show details.
 
 ### Removed
 - Nothing yet

@@ -72,25 +72,73 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
         }
     }
 
-    // Fetch transactions
+    // Fetch transactions with linked invoice data
     const dbTransactions = await db.transaction.findMany({
         where,
         orderBy: { date: 'desc' },
         take: 100,
+        include: {
+            invoices: {
+                select: {
+                    id: true,
+                    serialId: true,
+                    customerName: true,
+                    customerEmail: true,
+                    amount: true,
+                    vatAmount: true,
+                    status: true,
+                    dateIssued: true,
+                    dateDue: true,
+                    items: true,
+                }
+            }
+        }
     });
 
-    const transactions = dbTransactions.map(t => ({
-        ...t,
-        type: t.type || 'expense',
-        amount: Number(t.amount),
-        vatAmount: t.vatAmount ? Number(t.vatAmount) : 0,
-        isDeductible: t.isDeductible ?? false,
-        hasVatEvidence: t.hasVatEvidence ?? false,
-        weCompliant: t.weCompliant ?? false,
-        authorizedBy: t.authorizedBy || null,
-        paymentMethod: t.paymentMethod || null,
-        receiptUrls: t.receiptUrls || [],
-    })) as unknown as Transaction[];
+    const transactions = dbTransactions.map(t => {
+        // Parse invoice items if present
+        let invoiceItems: any[] = [];
+        if (t.invoices) {
+            try {
+                if (Array.isArray(t.invoices.items)) {
+                    invoiceItems = t.invoices.items;
+                } else if (typeof t.invoices.items === 'string') {
+                    invoiceItems = JSON.parse(t.invoices.items);
+                }
+            } catch (e) {
+                console.error('Failed to parse invoice items:', e);
+            }
+        }
+
+        // Destructure to exclude the raw invoices relation (contains Decimal/Date objects)
+        const { invoices: _invoices, ...rest } = t;
+
+        return {
+            ...rest,
+            type: t.type || 'expense',
+            amount: Number(t.amount),
+            vatAmount: t.vatAmount ? Number(t.vatAmount) : 0,
+            isDeductible: t.isDeductible ?? false,
+            hasVatEvidence: t.hasVatEvidence ?? false,
+            weCompliant: t.weCompliant ?? false,
+            authorizedBy: t.authorizedBy || null,
+            paymentMethod: t.paymentMethod || null,
+            receiptUrls: t.receiptUrls || [],
+            // Convert invoice data to serializable format
+            invoice: t.invoices ? {
+                id: t.invoices.id,
+                serialId: t.invoices.serialId,
+                customerName: t.invoices.customerName,
+                customerEmail: t.invoices.customerEmail,
+                amount: Number(t.invoices.amount),
+                vatAmount: Number(t.invoices.vatAmount),
+                status: t.invoices.status,
+                dateIssued: t.invoices.dateIssued ? t.invoices.dateIssued.toISOString() : null,
+                dateDue: t.invoices.dateDue ? t.invoices.dateDue.toISOString() : null,
+                items: invoiceItems,
+            } : null,
+        };
+    }) as unknown as Transaction[];
 
     // Calculate totals
     const totals = {

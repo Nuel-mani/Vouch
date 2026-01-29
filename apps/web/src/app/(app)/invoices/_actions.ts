@@ -66,7 +66,7 @@ export async function createInvoice(data: {
             categoryName: 'Sales',
             description: `Invoice #${serialId} - ${data.customerName}`,
             payee: data.customerName,
-            refId: `INV-${serialId}`,
+            refId: `INV-${invoice.id}`, // Use invoice UUID for global uniqueness
             vatAmount,
             hasVatEvidence: true,
             invoices: { connect: { id: invoice.id } },

@@ -61,7 +61,20 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
         }
 
         return {
-            ...inv,
+            id: inv.id,
+            serialId: inv.serialId,
+            customerName: inv.customerName,
+            customerEmail: inv.customerEmail,
+            customerAddress: inv.customerAddress,
+            customerPhone: inv.customerPhone,
+            amount: Number(inv.amount),
+            vatAmount: Number(inv.vatAmount),
+            status: inv.status,
+            dateIssued: inv.dateIssued,
+            dateDue: inv.dateDue,
+            datePaid: inv.datePaid,
+            notes: inv.notes,
+            proofUrl: inv.proofUrl,
             items: Array.isArray(parsedItems) ? parsedItems : [],
         };
     });
