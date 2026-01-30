@@ -3,6 +3,7 @@
 import { db } from '@vouch/db';
 import { revalidatePath } from 'next/cache';
 import { getAdminUser } from '../../../lib/permissions';
+import bcrypt from 'bcryptjs';
 
 /**
  * Update a user's role
@@ -179,8 +180,7 @@ export async function resetSwitchPin(userId: string, newPin: string) {
 
     try {
         // Hash the new PIN
-        // Note: hashing logic should ideally be shared, but importing bcrypt here is fine if available in admin
-        const bcrypt = require('bcryptjs');
+        // Hash the new PIN
         const pinHash = await bcrypt.hash(newPin, 10);
 
         // Get the user to find if they have a link
