@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { X, Loader2, User, Crown, ShieldCheck, Trash2, Ban } from 'lucide-react';
-import { updateUserRole, updateSubscriptionTier, suspendUser, deleteUser } from '../actions';
+import { updateUserRole, updateSubscriptionTier, suspendUser, deleteUser, getLinkedUser, resetSwitchPin, unlinkAccounts } from '../actions';
 import { impersonateUser } from '../../../actions/impersonate';
+import { Link2, KeyRound, Unlink } from 'lucide-react';
 
 interface UserManageModalProps {
     user: {
@@ -12,6 +13,7 @@ interface UserManageModalProps {
         businessName: string | null;
         role: string;
         subscriptionTier: string;
+        linkedUserId?: string | null;
     };
     onClose: () => void;
 }
@@ -151,6 +153,13 @@ export function UserManageModal({ user, onClose }: UserManageModalProps) {
                     )}
                 </div>
 
+                {/* Dual Account Section */}
+                {user.linkedUserId && (
+                    <div className="mb-6 border-t border-slate-700 pt-4">
+                        <DualAccountManager userId={user.id} linkedUserId={user.linkedUserId} />
+                    </div>
+                )}
+
                 {/* Impersonation Section */}
                 <div className="mb-6 border-t border-slate-700 pt-4">
                     <div className="flex items-center justify-between">
@@ -232,6 +241,7 @@ interface ManageButtonProps {
         businessName: string | null;
         role: string;
         subscriptionTier: string;
+        linkedUserId?: string | null;
     };
 }
 
@@ -250,5 +260,112 @@ export function ManageUserButton({ user }: ManageButtonProps) {
                 <UserManageModal user={user} onClose={() => setShowModal(false)} />
             )}
         </>
+    );
+}
+
+function DualAccountManager({ userId, linkedUserId }: { userId: string, linkedUserId: string }) {
+    const [status, setStatus] = useState<'idle' | 'loading' | 'loaded'>('idle');
+    const [linkedUser, setLinkedUser] = useState<any>(null);
+    const [pinMode, setPinMode] = useState(false);
+    const [newPin, setNewPin] = useState('');
+
+    const loadLinkedUser = async () => {
+        setStatus('loading');
+        const res = await getLinkedUser(linkedUserId);
+        if (res.success) {
+            setLinkedUser(res.linkedUser);
+            setStatus('loaded');
+        } else {
+            alert(res.error);
+            setStatus('idle');
+        }
+    };
+
+    const handleResetPin = async () => {
+        if (!newPin || newPin.length < 4) return alert('PIN too short');
+        setStatus('loading');
+        const res = await resetSwitchPin(userId, newPin);
+        setStatus('loaded'); // keep loaded state
+        setPinMode(false);
+        setNewPin('');
+        if (res.success) alert('PIN updated successfully');
+        else alert(res.error);
+    };
+
+    const handleUnlink = async () => {
+        if (!confirm('Are you sure? This will break the connection between these accounts.')) return;
+        setStatus('loading');
+        const res = await unlinkAccounts(userId);
+        if (res.success) {
+            alert('Accounts unlinked');
+            window.location.reload();
+        } else {
+            alert(res.error);
+            setStatus('loaded');
+        }
+    };
+
+    if (status === 'idle') {
+        return (
+            <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                    <Link2 size={16} /> Linked Account Detected
+                </span>
+                <button
+                    onClick={loadLinkedUser}
+                    className="text-blue-400 text-xs hover:underline"
+                >
+                    View Details
+                </button>
+            </div>
+        );
+    }
+
+    if (status === 'loading') {
+        return <Loader2 className="animate-spin mx-auto text-slate-500" size={20} />;
+    }
+
+    return (
+        <div className="bg-slate-900/50 rounded-lg p-3 text-sm">
+            <div className="flex justify-between items-start mb-3">
+                <div>
+                    <p className="text-slate-300 font-medium">{linkedUser?.businessName || 'Personal Account'}</p>
+                    <p className="text-xs text-slate-500">{linkedUser?.email}</p>
+                </div>
+                <span className="text-[10px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded capitalize">
+                    {linkedUser?.accountType}
+                </span>
+            </div>
+
+            <div className="space-y-2">
+                {pinMode ? (
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            placeholder="New PIN (e.g. 1234)"
+                            className="flex-1 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-white"
+                            value={newPin}
+                            onChange={e => setNewPin(e.target.value)}
+                        />
+                        <button onClick={handleResetPin} className="bg-blue-600 text-white px-2 rounded text-xs">Save</button>
+                        <button onClick={() => setPinMode(false)} className="text-slate-400 px-1"><X size={14} /></button>
+                    </div>
+                ) : (
+                    <button
+                        onClick={() => setPinMode(true)}
+                        className="w-full flex items-center justify-center gap-2 py-1.5 border border-slate-700 rounded text-slate-300 hover:bg-slate-800 transition"
+                    >
+                        <KeyRound size={14} /> Reset Switch PIN
+                    </button>
+                )}
+
+                <button
+                    onClick={handleUnlink}
+                    className="w-full flex items-center justify-center gap-2 py-1.5 border border-red-900/30 text-red-400 rounded hover:bg-red-900/20 transition"
+                >
+                    <Unlink size={14} /> Unlink Account
+                </button>
+            </div>
+        </div>
     );
 }

@@ -5,6 +5,7 @@ import { TopBar } from './_components/TopBar';
 import { db } from '@vouch/db';
 import Link from 'next/link';
 import { AlertTriangle, Settings } from 'lucide-react';
+import { ComplianceGuard } from './_components/ComplianceGuard';
 
 export default async function AppLayout({
     children,
@@ -18,13 +19,53 @@ export default async function AppLayout({
 
     if (!rawUser) return null;
 
-    // Check for compliance suspension
+    // Check for compliance suspension and onboarding status
     const dbUser = await db.user.findUnique({
         where: { id: rawUser.id },
-        select: { complianceSuspended: true }
+        select: {
+            complianceSuspended: true,
+            onboardingCompleted: true,
+            accountType: true,
+            linkedUserId: true, // Needed for Sidebar switch button
+            businessName: true,
+            email: true,
+            brandColor: true,
+            subscriptionTier: true,
+        }
     });
 
     const isSuspended = dbUser?.complianceSuspended;
+
+    // If suspended, show restricted UI
+    if (isSuspended) {
+        // ... (Suspended UI remains the same)
+        return (
+            <div className="min-h-screen bg-[var(--background)] flex flex-col">
+                {/* Suspended Header */}
+                <div className="bg-red-600 text-white px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <AlertTriangle size={24} />
+                        <div>
+                            <div className="font-bold">Account Restricted</div>
+                            <div className="text-sm opacity-90">Your account is suspended due to failed verification attempts</div>
+                        </div>
+                    </div>
+                    <Link
+                        href={rawUser.accountType === 'business' ? '/settings/branding' : '/settings'}
+                        className="flex items-center gap-2 px-4 py-2 bg-white text-red-600 rounded-lg font-medium hover:bg-red-50 transition"
+                    >
+                        <Settings size={18} />
+                        Verify Now
+                    </Link>
+                </div>
+
+                {/* Main Content - Only Settings */}
+                <main className="flex-1 p-6 lg:p-8 max-w-4xl mx-auto w-full">
+                    {children}
+                </main>
+            </div>
+        );
+    }
 
     // Fetch Receipt Hunter stats
     let riskyCount = 0;
@@ -58,40 +99,17 @@ export default async function AppLayout({
 
     riskyCount = riskyTxCount + invoiceCount;
 
-    const user = JSON.parse(JSON.stringify(rawUser));
-
-    // If suspended, show restricted UI
-    if (isSuspended) {
-        return (
-            <div className="min-h-screen bg-[var(--background)] flex flex-col">
-                {/* Suspended Header */}
-                <div className="bg-red-600 text-white px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <AlertTriangle size={24} />
-                        <div>
-                            <div className="font-bold">Account Restricted</div>
-                            <div className="text-sm opacity-90">Your account is suspended due to failed verification attempts</div>
-                        </div>
-                    </div>
-                    <Link
-                        href={rawUser.accountType === 'business' ? '/settings/branding' : '/settings'}
-                        className="flex items-center gap-2 px-4 py-2 bg-white text-red-600 rounded-lg font-medium hover:bg-red-50 transition"
-                    >
-                        <Settings size={18} />
-                        Verify Now
-                    </Link>
-                </div>
-
-                {/* Main Content - Only Settings */}
-                <main className="flex-1 p-6 lg:p-8 max-w-4xl mx-auto w-full">
-                    {children}
-                </main>
-            </div>
-        );
-    }
+    // Merge session user with freshly fetched DB fields to ensure Sidebar has latest data
+    const user = {
+        ...JSON.parse(JSON.stringify(rawUser)),
+        ...dbUser
+    };
 
     return (
         <div className="min-h-screen bg-[var(--muted)] dark:bg-slate-950 flex">
+            {/* Enforcement Guard */}
+            <ComplianceGuard user={dbUser || { accountType: 'personal', onboardingCompleted: false }} />
+
             {/* Sidebar */}
             <Sidebar user={user} riskyCount={riskyCount} />
 

@@ -130,6 +130,7 @@ function RegisterContent() {
                     paysRent,
                     isTaxExempt,
                     sector: 'Salary Earner', // Default sector for personal
+                    taxIdentityNumber: taxId, // Map NIN input to taxIdentityNumber field
                 }),
             };
 

@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Added
+
+## [1.2.1] - 2026-01-30
+
+### Added
+- **Admin Dual Account Support**: Full administrative capabilities for managing users with linked personal/business accounts.
+  - **Linked Account View**: Admins can see if a user has a linked account and view its details (email, business name).
+  - **Switch PIN Reset**: Admins can securely reset the 8-digit Switch PIN for a user, automatically syncing the change to the linked account.
+  - **Account Unlinking**: Emergency "Unlink Account" action to break the connection between two profiles.
+- **Personal Account Onboarding**: Improved experience for new personal accounts.
+  - **Welcome Modal**: A dedicated "Welcome" modal now appears for new personal accounts, prompting them to complete their profile (Rent, Income, etc.) to unlock full features.
+- **Account Switching Logic**:
+  - **Smart Visibility**: The "Switch Account" button in the sidebar is now strictly conditional, only appearing if a valid `linkedUserId` exists in the database.
+  - **Session Handling**: Fixed issues where switching accounts could sometimes lead to a stale session state.
+
+### Fixed
+- **Admin User Management**: Fixed runtime error in `UserManageModal` where `DualAccountManager` component was missing.
+- **Web App Layout**: Fixed `linkedUserId` not being fetched in the root layout, which caused the "Switch Account" button to disappear for valid dual-account users.
+- **Data Serialization**: Fixed server-component crash caused by passing non-serialized `Decimal` types (Rent, Income) to the client-side Welcome Modal.
+
 ## [1.2.0] - 2026-01-29
 
 ### Added

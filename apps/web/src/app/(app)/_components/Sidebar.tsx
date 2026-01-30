@@ -15,8 +15,10 @@ import {
     Menu,
     X,
     ChevronDown,
+    ArrowRightLeft
 } from 'lucide-react';
 import { useState } from 'react';
+import { SwitchAccountModal } from './SwitchAccountModal';
 
 interface SidebarProps {
     user: {
@@ -26,6 +28,7 @@ interface SidebarProps {
         accountType: string;
         subscriptionTier: string;
         brandColor?: string;
+        linkedUserId?: string | null;
     } | null;
     riskyCount?: number;
 }
@@ -34,7 +37,7 @@ const navItems = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', roles: ['personal', 'business'] },
     { href: '/transactions', icon: Receipt, label: 'Transactions', roles: ['personal', 'business'] },
     { href: '/invoices', icon: FileText, label: 'Invoices', roles: ['business'] },
-    { href: '/tax-forms', icon: FileText, label: 'Tax Forms', roles: ['personal'] }, // [NEW] Added for personal users
+    { href: '/tax-forms', icon: FileText, label: 'Tax Forms', roles: ['personal'] },
     { href: '/analytics', icon: PieChart, label: 'Analytics', roles: ['personal', 'business'] },
     { href: '/fiscal', icon: Calculator, label: 'Fiscal Engine', roles: ['business'] },
     { href: '/optimizer', icon: Sparkles, label: 'Tax Optimizer', roles: ['personal', 'business'], hasBadge: true },
@@ -50,6 +53,7 @@ export function Sidebar({ user, riskyCount = 0 }: SidebarProps) {
     const pathname = usePathname();
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isSwitchModalOpen, setIsSwitchModalOpen] = useState(false);
 
     const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
@@ -177,7 +181,7 @@ export function Sidebar({ user, riskyCount = 0 }: SidebarProps) {
                 <div className="p-4 border-t border-[var(--border)]">
                     <div className="flex items-center gap-3 px-3 py-2">
                         <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
                             style={{ backgroundColor: user?.brandColor || 'var(--primary)' }}
                         >
                             {(user?.businessName?.[0] || user?.email?.[0] || 'U').toUpperCase()}
@@ -188,9 +192,26 @@ export function Sidebar({ user, riskyCount = 0 }: SidebarProps) {
                             </p>
                             <p className="text-xs text-[var(--muted-foreground)] capitalize">{user?.subscriptionTier || 'free'} Plan</p>
                         </div>
+
+                        {/* Switch Account Button */}
+                        {user?.linkedUserId && (
+                            <button
+                                onClick={() => setIsSwitchModalOpen(true)}
+                                className="p-1.5 text-[var(--muted-foreground)] hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                title="Switch Account"
+                            >
+                                <ArrowRightLeft size={18} />
+                            </button>
+                        )}
                     </div>
                 </div>
             </aside>
+
+            {/* Switch Account Modal */}
+            <SwitchAccountModal
+                isOpen={isSwitchModalOpen}
+                onClose={() => setIsSwitchModalOpen(false)}
+            />
         </>
     );
 }

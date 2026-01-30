@@ -142,3 +142,131 @@ export async function deleteUser(userId: string) {
         return { success: false, error: 'Failed to delete user' };
     }
 }
+
+/**
+ * Get linked user details
+ */
+export async function getLinkedUser(linkedUserId: string) {
+    const admin = await getAdminUser();
+    if (!admin) return { success: false, error: 'Unauthorized' };
+
+    try {
+        const linkedUser = await db.user.findUnique({
+            where: { id: linkedUserId },
+            select: {
+                id: true,
+                email: true,
+                businessName: true,
+                accountType: true,
+            }
+        });
+
+        if (!linkedUser) return { success: false, error: 'Linked user not found' };
+
+        return { success: true, linkedUser };
+    } catch (error) {
+        console.error('Error fetching linked user:', error);
+        return { success: false, error: 'Failed to fetch linked user' };
+    }
+}
+
+/**
+ * Reset Switch PIN for a user and their linked account
+ */
+export async function resetSwitchPin(userId: string, newPin: string) {
+    const admin = await getAdminUser();
+    if (!admin) return { success: false, error: 'Unauthorized' };
+
+    try {
+        // Hash the new PIN
+        // Note: hashing logic should ideally be shared, but importing bcrypt here is fine if available in admin
+        const bcrypt = require('bcryptjs');
+        const pinHash = await bcrypt.hash(newPin, 10);
+
+        // Get the user to find if they have a link
+        const user = await db.user.findUnique({
+            where: { id: userId },
+            select: { linkedUserId: true }
+        });
+
+        if (!user) return { success: false, error: 'User not found' };
+
+        // Update main user
+        await db.user.update({
+            where: { id: userId },
+            data: { switchPinHash: pinHash }
+        });
+
+        // Update linked user if exists
+        if (user.linkedUserId) {
+            await db.user.update({
+                where: { id: user.linkedUserId },
+                data: { switchPinHash: pinHash }
+            });
+        }
+
+        await db.auditLog.create({
+            data: {
+                userId: admin.userId,
+                action: 'SWITCH_PIN_RESET',
+                resource: 'user',
+                resourceId: userId,
+                details: { linkedUserId: user.linkedUserId },
+            },
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error resetting PIN:', error);
+        return { success: false, error: 'Failed to reset PIN' };
+    }
+}
+
+/**
+ * Unlink two accounts
+ */
+export async function unlinkAccounts(userId: string) {
+    const admin = await getAdminUser();
+    if (!admin || admin.role !== 'admin') return { success: false, error: 'Unauthorized' };
+
+    try {
+        const user = await db.user.findUnique({
+            where: { id: userId },
+            select: { linkedUserId: true }
+        });
+
+        if (!user || !user.linkedUserId) {
+            return { success: false, error: 'No linked account found' };
+        }
+
+        const linkedUserId = user.linkedUserId;
+
+        // Remove link from User 1
+        await db.user.update({
+            where: { id: userId },
+            data: { linkedUserId: null, switchPinHash: null }
+        });
+
+        // Remove link from User 2
+        await db.user.update({
+            where: { id: linkedUserId },
+            data: { linkedUserId: null, switchPinHash: null }
+        });
+
+        await db.auditLog.create({
+            data: {
+                userId: admin.userId,
+                action: 'ACCOUNTS_UNLINKED',
+                resource: 'user',
+                resourceId: userId,
+                details: { unlinkedFrom: linkedUserId },
+            },
+        });
+
+        revalidatePath('/users');
+        return { success: true };
+    } catch (error) {
+        console.error('Error unlinking accounts:', error);
+        return { success: false, error: 'Failed to unlink accounts' };
+    }
+}

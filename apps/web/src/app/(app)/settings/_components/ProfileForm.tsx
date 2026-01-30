@@ -14,6 +14,8 @@ interface ProfileFormProps {
         businessStructure: string | null;
         sector: string | null;
         taxIdentityNumber: string | null;
+        nin: string | null;
+        bvn: string | null;
         businessAddress: string | null;
         phoneNumber: string | null;
         residenceState: string | null;
@@ -196,7 +198,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                             <input
                                 name="nin"
                                 type="text"
-                                defaultValue={(user as any).nin || ''}
+                                defaultValue={user.nin || ''}
                                 className="w-full px-4 py-3 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
                                 placeholder="11-digit NIN..."
                                 maxLength={11}
@@ -210,7 +212,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                             <input
                                 name="bvn"
                                 type="text"
-                                defaultValue={(user as any).bvn || ''}
+                                defaultValue={user.bvn || ''}
                                 className="w-full px-4 py-3 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
                                 placeholder="11-digit BVN..."
                                 maxLength={11}

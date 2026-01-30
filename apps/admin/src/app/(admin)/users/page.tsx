@@ -12,6 +12,12 @@ export default async function UsersPage() {
                 select: { transactions: true, invoices: true },
             },
         },
+        // We need fields that might not be in the default selection if we used select, 
+        // but since we rely on default selection + include, we just need to ensure 
+        // linkedUserId is accessible. Prisma 'findMany' returns all scalar fields by default.
+        // So no change needed here actually, unless we were selecting specific fields.
+        // Let's verify if 'linkedUserId' is being passed to the client component.
+
     });
 
     return (
@@ -108,6 +114,7 @@ export default async function UsersPage() {
                                                 businessName: user.businessName,
                                                 role: (user as any).role || 'user',
                                                 subscriptionTier: user.subscriptionTier || 'free',
+                                                linkedUserId: user.linkedUserId,
                                             }}
                                         />
                                     </td>

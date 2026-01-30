@@ -3,6 +3,7 @@ import { validateSession } from '@vouch/auth';
 import { db } from '@vouch/db';
 import { ProfileForm } from './_components/ProfileForm';
 import { ComplianceUpload } from './_components/ComplianceUpload';
+import { PersonalWelcomeModal } from './_components/PersonalWelcomeModal';
 import { redirect } from 'next/navigation';
 
 export default async function SettingsPage() {
@@ -39,6 +40,8 @@ export default async function SettingsPage() {
             countryCode: true,
             currencySymbol: true,
             complianceSuspended: true,
+            // For modal logic
+            updatedAt: true,
         },
     });
 
@@ -69,6 +72,11 @@ export default async function SettingsPage() {
 
     const rejectionCount = allComplianceRequests.filter(r => r.status === 'rejected').length;
 
+    // Determine if welcome modal should show
+    // Show if: New account (no residence/income set) OR we want to force a periodic check
+    // Simple heuristic: If residenceState is missing, they haven't onboarded fully.
+    const showWelcomeModal = !fullUser.residenceState || !fullUser.annualIncome;
+
     return (
         <div className="max-w-3xl space-y-8">
             <div className="mb-8">
@@ -91,6 +99,21 @@ export default async function SettingsPage() {
                     rejectionCount={rejectionCount}
                 />
             </div>
+
+            {/* Client-side Modal Wrapper needed? 
+                Actually, to make the modal interactive (useState for close), we need a client wrapper or logic.
+                Since this is a Server Component, we can pass a prop to ProfileForm or render a Client logic component.
+                Let's make PersonalWelcomeModal client-side and render it directly.
+            */}
+            <PersonalWelcomeModal
+                initiallyOpen={showWelcomeModal}
+                user={{
+                    ...fullUser,
+                    rentAmount: fullUser.rentAmount ? Number(fullUser.rentAmount) : null,
+                    annualIncome: fullUser.annualIncome ? Number(fullUser.annualIncome) : null,
+                }}
+            // onClose is optional and cannot be passed from Server Component (it's a function)
+            />
         </div>
     );
 }

@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { validateSession } from '@vouch/auth';
 import { db } from '@vouch/db';
 import { revalidatePath } from 'next/cache';
+import { checkComplianceStatus } from '../../(auth)/onboarding/check';
 
 export async function updateProfile(formData: FormData) {
     const cookieStore = await cookies();
@@ -32,8 +33,12 @@ export async function updateProfile(formData: FormData) {
         },
     });
 
+    const compliance = await checkComplianceStatus(user.id);
+
     revalidatePath('/settings');
     revalidatePath('/dashboard');
+
+    return compliance;
 }
 
 export async function updateBranding(formData: FormData) {
@@ -70,7 +75,6 @@ export async function updateBrandStudio(formData: FormData) {
         where: { id: user.id },
         data: {
             // Branding
-            // Branding
             brandColor: formData.get('brandColor') as string,
             invoiceTemplate: formData.get('invoiceTemplate') as string || 'modern',
             invoiceFont: formData.get('invoiceFont') as string || 'inter',
@@ -85,6 +89,7 @@ export async function updateBrandStudio(formData: FormData) {
             businessStructure: formData.get('businessStructure') as string || null,
             sector: formData.get('sector') as string || null,
             taxIdentityNumber: formData.get('taxIdentityNumber') as string || null,
+            cacNumber: formData.get('cacNumber') as string || null,
 
             // NTA 2025 Compliance
             nin: formData.get('nin') as string || null,
@@ -94,6 +99,10 @@ export async function updateBrandStudio(formData: FormData) {
         },
     });
 
+    const compliance = await checkComplianceStatus(user.id);
+
     revalidatePath('/settings/branding');
     revalidatePath('/dashboard');
+
+    return compliance;
 }
