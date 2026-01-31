@@ -49,7 +49,6 @@ export async function sendAdminAlert(message: string, options: AlertOptions) {
                 type: 'mrkdwn',
                 text: '```' + JSON.stringify(details, null, 2) + '```'
             }
-            // @ts-ignore - Block kit typing looseness
         } as any);
     }
 
