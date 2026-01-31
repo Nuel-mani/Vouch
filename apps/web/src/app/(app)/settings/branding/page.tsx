@@ -33,6 +33,8 @@ export default async function BrandingPage() {
             isProfessionalService: true,
             showWatermark: true,
             complianceSuspended: true,
+            cacNumber: true,
+            linkedUserId: true,
         },
     });
 

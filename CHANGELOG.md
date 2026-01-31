@@ -9,7 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [1.2.2] - 2026-01-30
+
 ### Added
+- **Admin Alerting System**: Real-time Slack notifications for high-risk administrative actions.
+  - **Critical Alerts**: Triggered on User Deletion and Dual Account Unlinking.
+  - **Warning Alerts**: Triggered on Transaction Overrides, Transaction Archival, and Switch PIN Resets.
+
+### Fixed
+- **Admin Transactions Crash**: Fixed `Decimal objects are not supported` error by implementing server-side serialization of `Decimal` and `Date` fields in `getTransactions`.
+- **Next.js 15 Compatibility**: Fixed `Server Error` in Transactions Page by awaiting `searchParams` prop before access, resolving sync/async access violations.
+- **CIT Return Form**: Fixed `RC NUMBER` displaying as "RC-PENDING" by correctly mapping `user.cacNumber` in `formMapper.ts`.
+- **Branding Studio**: Fixed display issues where `cacNumber` and `linkedUserId` were hidden due to missing fields in Prisma `select`.
+
 
 ## [1.2.1] - 2026-01-30
 

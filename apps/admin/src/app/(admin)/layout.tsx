@@ -30,6 +30,7 @@ const navItems = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/access-requests', icon: Shield, label: 'Access Requests' },
     { href: '/users', icon: Users, label: 'Users' },
+    { href: '/transactions', icon: CreditCard, label: 'Transactions' },
     { href: '/subscriptions', icon: CreditCard, label: 'Subscriptions' },
     { href: '/compliance', icon: FileCheck, label: 'Compliance' },
     { href: '/insights', icon: Lightbulb, label: 'Strategic Insights' },

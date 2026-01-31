@@ -21,6 +21,7 @@ interface UserData {
     rentAmount: number | Decimal | null;
     annualIncome: number | Decimal | null;
     residenceState: string | null;
+    cacNumber?: string | null;
 }
 
 interface TransactionData {
@@ -194,7 +195,7 @@ export function mapToCITReturn(user: UserData, transactions: TransactionData[], 
     return {
         companyName: user.businessName || 'N/A',
         tin: user.taxIdentityNumber || 'N/A',
-        rcNumber: 'RC-PENDING',
+        rcNumber: user.cacNumber || 'RC-PENDING',
         filingPeriod: `${filingYear}`,
         companySize: taxCalc.companyStatus === 'small' ? 'Small' : 'Large',
         turnover,
@@ -271,7 +272,7 @@ export function mapToVATReturn(
     return {
         companyName: user.businessName || 'N/A',
         tin: user.taxIdentityNumber || 'N/A',
-        rcNumber: 'RC-PENDING',
+        rcNumber: user.cacNumber || 'RC-PENDING',
         period: vatCalc.period,
         month,
         year,

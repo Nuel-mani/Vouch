@@ -97,7 +97,7 @@ export function CITReturnPrint({ data }: { data: CITReturnData }) {
 
             {/* Section B: The Small Company Trap / Status Check */}
             <section className="mb-6">
-                <div className="bg-gray-100 p-2 border border-black border-b-0 font-bold text-sm">SECTION B: STATUS VALIDATION (THE "MEAT")</div>
+                <div className="bg-gray-100 p-2 border border-black border-b-0 font-bold text-sm">SECTION B: STATUS VALIDATION</div>
                 <table className="w-full text-sm border border-black">
                     <tbody>
                         <tr className="border-b border-black">

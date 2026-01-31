@@ -86,7 +86,7 @@ export function FormAPrint({ data }: { data: FormAData }) {
 
             {/* Section B: Income Declaration */}
             <section className="mb-6">
-                <div className="bg-gray-100 p-2 border border-black border-b-0 font-bold text-sm">SECTION B: STATEMENT OF INCOME (THE "MEAT")</div>
+                <div className="bg-gray-100 p-2 border border-black border-b-0 font-bold text-sm">SECTION B: STATEMENT OF INCOME</div>
                 <table className="w-full text-sm border border-black">
                     <tbody>
                         <tr className="border-b border-black">

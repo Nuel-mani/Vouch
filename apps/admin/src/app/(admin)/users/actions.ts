@@ -3,6 +3,7 @@
 import { db } from '@vouch/db';
 import { revalidatePath } from 'next/cache';
 import { getAdminUser } from '../../../lib/permissions';
+import { sendAdminAlert } from '../../../lib/notifications';
 import bcrypt from 'bcryptjs';
 
 /**
@@ -136,6 +137,15 @@ export async function deleteUser(userId: string) {
             },
         });
 
+        await sendAdminAlert(`User Deleted: ${userId}`, {
+            level: 'critical',
+            details: {
+                adminId: admin.userId,
+                userId,
+                deletedEmail: user?.email
+            }
+        });
+
         revalidatePath('/users');
         return { success: true };
     } catch (error) {
@@ -215,6 +225,15 @@ export async function resetSwitchPin(userId: string, newPin: string) {
             },
         });
 
+        await sendAdminAlert(`Switch PIN Reset: ${userId}`, {
+            level: 'warning',
+            details: {
+                adminId: admin.userId,
+                userId,
+                linkedUserId: user.linkedUserId
+            }
+        });
+
         return { success: true };
     } catch (error) {
         console.error('Error resetting PIN:', error);
@@ -261,6 +280,15 @@ export async function unlinkAccounts(userId: string) {
                 resourceId: userId,
                 details: { unlinkedFrom: linkedUserId },
             },
+        });
+
+        await sendAdminAlert(`Accounts Unlinked: ${userId}`, {
+            level: 'critical',
+            details: {
+                adminId: admin.userId,
+                userId,
+                unlinkedFrom: linkedUserId
+            }
         });
 
         revalidatePath('/users');
