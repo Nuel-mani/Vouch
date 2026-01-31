@@ -4,5 +4,7 @@ export * from './bank/bankParser';
 export * from './tax/vatEngine';
 export * from './tax/digitalAssetTax';
 export * from './email';
+export * from './reports';
+export * from './notifications';
 export * from './insights/insightService';
 export * from './insights/data';

@@ -31,23 +31,26 @@ export function TopBar({ user }: TopBarProps) {
     };
 
     return (
-        <header className="h-16 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between px-4 lg:px-8">
+        <header className="h-16 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between px-4 lg:px-8 print:hidden">
             {/* Center: Global Search */}
             <GlobalSearch />
 
             {/* Right: Actions */}
             <div className="flex items-center gap-2 shrink-0">
-                {/* Theme Toggle */}
-                <button
-                    onClick={toggleTheme}
-                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition"
-                    title={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
-                >
-                    {resolvedTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-                </button>
-
                 {/* Notifications */}
-                <NotificationBell />
+                <div className="flex items-center gap-2 md:gap-4">
+                    {/* Theme Toggle */}
+                    <button
+                        onClick={toggleTheme}
+                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition"
+                        title={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
+                    >
+                        {resolvedTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                    </button>
+
+                    {/* Notifications */}
+                    <NotificationBell />
+                </div>
 
                 {/* Profile Dropdown */}
                 <div className="relative">
@@ -95,6 +98,6 @@ export function TopBar({ user }: TopBarProps) {
                     )}
                 </div>
             </div>
-        </header>
+        </header >
     );
 }

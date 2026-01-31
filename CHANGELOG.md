@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [1.2.4] - 2026-01-31
+
+### Added
+- **Database Performance Indexes**: Added high-performance composite indexes to `Transaction` and `Invoice` tables.
+  - `Transaction`: `[userId]`, `[userId, date]`, `[userId, type, amount]`
+  - `Invoice`: `[userId, status]`
+- **Async Badge Fetch**: Moved "Receipt Hunter" notification count to a client-side API endpoint (`/api/risky-count`), unblocking the layout render.
+
+### Fixed
+- **Onboarding Redirect Loop**: Fixed issue where users with completed profiles were stuck in a redirect loop between Dashboard and Brand Studio. Now computes compliance status dynamically.
+- **Account Switch Navigation**: After switching between Business/Personal accounts, users are now redirected to the Dashboard instead of staying on account-type-specific pages.
+
+## [1.2.3] - 2026-01-30
+
+### Added
+- **Analytics Engine 2.0**: Complete overhaul of the Analytics dashboard.
+  - **Server-Side Aggregation**: Replaced client-side loop with efficient `generateProfitAndLoss` backend service.
+  - **Interactive Charts**: Integrated Recharts for standard visualization (Pie Charts for P&L, Bar Charts for Cash Flow).
+  - **PDF Export**: Added "Export PDF" button with print-optimized styling (hides sidebar/navigation).
+
+### Fixed
+- **Print Background Colors**: Fixed issue where PDF printouts lacked color by forcing `background-graphics` via CSS (`print-color-adjust: exact`).
+- **Chart Dimensions**: Fixed persistent `width(-1)` and `height(-1)` console warnings by enforcing fixed pixel heights for all charts.
+- **Charts Responsiveness**: Resolved layout thrashing in flex containers by isolating Recharts in fixed-dimension wrappers.
+
+
 ## [1.2.2] - 2026-01-30
 
 ### Added

@@ -44,6 +44,9 @@ model Transaction {
   user           User?     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "transactions_tenant_id_fkey")
 
   @@map("transactions")
+  @@index([userId])
+  @@index([userId, date])
+  @@index([userId, type, amount]) // Optimized for Receipt Hunter query
 }
 
 model Invoice {
@@ -72,6 +75,7 @@ model Invoice {
   transactions    Transaction[]
 
   @@map("invoices")
+  @@index([userId, status]) // Optimized for Invoice Count query
 }
 
 model Subscription {
@@ -269,6 +273,7 @@ model User {
   refreshTokens       RefreshToken[]
   passwordResetRequests PasswordResetRequest[]
   complianceRequests    ComplianceRequest[]
+  notifications         Notification[]
   adminRoles            UserAdminRole[]
 
   sectors             sectors?               @relation(fields: [sectorId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tenants_sector_id_fkey")
@@ -404,4 +409,20 @@ model UserAdminRole {
 
   @@unique([userId, roleId])
   @@map("user_admin_roles")
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   @db.VarChar(50) // info, success, warning, error
+  title     String   @db.VarChar(255)
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  actionUrl String?  @map("action_url")
+  data      Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([userId, isRead])
+  @@map("notifications")
 }

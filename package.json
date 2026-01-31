@@ -1,5 +1,6 @@
 {
     "name": "vouch",
+    "version": "1.2.4",
     "private": true,
     "workspaces": [
         "apps/*",

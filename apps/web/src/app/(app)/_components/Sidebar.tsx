@@ -17,7 +17,7 @@ import {
     ChevronDown,
     ArrowRightLeft
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SwitchAccountModal } from './SwitchAccountModal';
 
 interface SidebarProps {
@@ -57,12 +57,32 @@ export function Sidebar({ user, riskyCount = 0 }: SidebarProps) {
 
     const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
+    // Fetch risky count client-side
+    const [fetchedRiskyCount, setFetchedRiskyCount] = useState(0);
+
+
+
+    useEffect(() => {
+        // Simple fetch to avoid adding SWR dependency if not present
+        fetch('/api/risky-count')
+            .then(res => res.json())
+            .then(data => {
+                if (typeof data.count === 'number') {
+                    setFetchedRiskyCount(data.count);
+                }
+            })
+            .catch(err => console.error('Failed to fetch badge count', err));
+    }, [pathname]); // Refresh on navigation
+
+    // Use fetched count if available, otherwise 0 (initial prop is usually 0 now)
+    const displayCount = fetchedRiskyCount; // Ignore prop as we moved to client-side
+
     return (
         <>
             {/* Mobile Menu Button */}
             <button
                 onClick={() => setIsMobileOpen(true)}
-                className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white dark:bg-slate-800 rounded-lg shadow-md border border-[var(--border)]"
+                className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white dark:bg-slate-800 rounded-lg shadow-md border border-[var(--border)] print:hidden"
             >
                 <Menu size={20} className="text-[var(--foreground)]" />
             </button>
@@ -85,6 +105,7 @@ export function Sidebar({ user, riskyCount = 0 }: SidebarProps) {
                     transform transition-transform duration-200 ease-in-out
                     lg:translate-x-0
                     ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
+                    print:hidden
                 `}
             >
                 {/* Header */}
@@ -128,9 +149,9 @@ export function Sidebar({ user, riskyCount = 0 }: SidebarProps) {
                                     {item.label}
                                 </div>
                                 {/* Receipt Hunter Badge */}
-                                {item.hasBadge && riskyCount > 0 && (
+                                {item.hasBadge && displayCount > 0 && (
                                     <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
-                                        {riskyCount}
+                                        {displayCount}
                                     </span>
                                 )}
                             </Link>

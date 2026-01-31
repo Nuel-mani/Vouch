@@ -24,8 +24,8 @@ export function SwitchAccountModal({ isOpen, onClose }: SwitchAccountModalProps)
         try {
             const result = await switchAccount(pin);
             if (result.success) {
-                // Hard reload to refresh session and user context
-                window.location.reload();
+                // Navigate to dashboard to avoid staying on a page meant for the other account type
+                window.location.href = '/dashboard';
             } else {
                 setError(result.error || 'Failed to switch account');
                 setLoading(false);
