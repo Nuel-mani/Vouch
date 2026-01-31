@@ -28,7 +28,6 @@ export default async function AppLayout({
         select: {
             complianceSuspended: true,
             accountType: true,
-            // @ts-expect-error - Schema updated but client may be stale
             linkedUserId: true, // Needed for Sidebar switch button
             businessName: true,
             email: true,
